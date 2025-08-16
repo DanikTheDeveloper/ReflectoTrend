@@ -1,0 +1,7 @@
+%syntax-version=1.0.0
+%project=reflecto
+%uri=https://dumurali@dev.azure.com/dumurali/ReflectoTrend/_git/ReflectoTrend
+
+userschema 2023-11-11T15:25:22Z Piyush Khurana <pka42@sfu.ca> # Add schema for users table
+pricingschema 2024-02-06T05:20:17Z ,,, <danik@WORKSTATION> # pricingschema\n     deploy/pricingschema.sql\n     revert/pricingschema.sql\n     verify/pricingschema.sql
+tokenblacklist 2024-02-11T15:27:15Z Piyush Khurana <lucifer@pop-os> #      deploy/tokenblacklist.sql

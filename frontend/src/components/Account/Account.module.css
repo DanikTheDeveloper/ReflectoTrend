@@ -1,0 +1,17 @@
+.accountContainer {
+    display: flex;
+    padding: 20px;
+    margin-top: 20px;
+}
+.profileContainer {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 20px;
+}
+
+.settingsContainer {
+    margin-top: 20px;
+}

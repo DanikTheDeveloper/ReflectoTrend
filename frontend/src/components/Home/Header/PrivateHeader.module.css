@@ -1,0 +1,143 @@
+.header {
+		display: flex;
+		align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+    height: rem(50px);
+    border-bottom: rem(1px) solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+}
+
+.drawer {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: flex-start;
+    position: fixed;
+    height: rem(100px);
+}
+
+.line {
+    position: relative;
+    width: rem(100vw);
+    height: rem(1px);
+}
+.line::after {
+    content: "";
+    position: absolute;
+    width: rem(100vw);
+    height: rem(1px);
+    top: 50%;
+    transform: translateY(-50%);
+    border-top: rem(1px) solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+    z-index: 1;
+}
+
+.drawerToggleButton {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: flex-start;
+    width: rem(100vw);
+}
+
+.drawerButton {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: flex-start;
+    width: rem(100vw);
+    color: light-dark(var(--secondary-color), var(--primary-color));
+}
+.drawerButton:hover {
+    background-color: light-dark(var(--accent-color), var(--mantine-color-dark-6));
+}
+.drawerLogoutButton {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: flex-start;
+    width: rem(100vw);
+    color: light-dark(var(--warning-color), var(--warning-color));
+}
+.drawerLogoutButton:hover {
+    background-color: light-dark(var(--accent-color), var(--mantine-color-dark-6));
+}
+
+.logoLinks {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+    height: rem(84px);
+}
+
+.logo {
+    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-0));
+	height: rem(32px);
+	padding: rem(5px) rem(14px) rem(5px) rem(14px);
+    margin: rem(10px) rem(5px) rem(10px) rem(30px);
+	border-right: rem(1px) solid light-dark(var(--secondary-color), var(--mantine-color-gray-4));
+}
+
+
+.inner {
+    height: rem(84px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: row;
+    float: right;
+    margin-right: rem(50px);
+}
+
+.link {
+    line-height: 1;
+    padding: rem(8px) rem(12px);
+    border-radius: var(--mantine-radius-sm);
+    color: light-dark(var(--secondary-color), var(--secondary-color));
+
+    @mixin hover {
+        background-color: light-dark(var(--secondary-color), var(--mantine-color-dark-6));
+    }
+}
+
+.linkLabel {
+    color: var(--mantine-color-gray-0);
+    margin-right: rem(5px);
+}
+
+.user {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    transition: background-color 100ms ease;
+
+    &:hover {
+        background-color: light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-6));
+    }
+
+    @media (max-width: 600px) {
+        display: none;
+    }
+}
+
+.burger {
+    @media (min-width: 600px) {
+        display: none;
+    }
+    @media (max-width: 600px) {
+        display: none;
+    }
+}
+
+@media (orientation: landscape) and (max-width: 600px) {
+    .logo {
+        margin: rem(14px) rem(5px) rem(14px) rem(10px);
+    }
+    .inner {
+        margin-right: rem(20px);
+    }
+    .user {
+        padding: var(--spacing-xs) var(--spacing-md);
+    }
+}
+

@@ -1,0 +1,74 @@
+.pricingPage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+}
+
+.cardsContainer {
+    display: flex;
+    justify-content: center;
+    gap: 2rem; /* Adjust the gap between cards */
+    margin-top: 2rem;
+}
+
+.pricingCard {
+    width: 300px; /* Adjust width as needed */
+    padding: 2rem;
+    text-align: center;
+    border: 1px solid #e9ecef; /* This is a light grey border, adjust color as needed */
+    border-radius: 8px; /* Rounded corners for the card */
+}
+
+.planType {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.cardElement {
+    pointer-events: auto; 
+    z-index: 1;
+}
+
+.price {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.description {
+    margin-bottom: 1.5rem;
+}
+
+/* Add responsive styles if needed */
+@media (max-width: 768px) {
+    .cardsContainer {
+        flex-direction: column;
+    }
+}
+
+.heroSection {
+    text-align: center;
+    padding: 4rem 0; /* Add padding above and below the hero content */
+}
+
+.heroTitle {
+    font-size: 3rem; /* Large font size for the main title */
+    font-weight: 700;
+    margin-bottom: 1rem; /* Space between title and subtitle */
+}
+
+.heroSubtitle {
+    font-size: 1.5rem; /* Slightly smaller font size for the subtitle */
+}
+
+.heroSubtitle2 {
+    font-size: 1.5rem; /* Slightly smaller font size for the subtitle */
+    color: light-dark(var(--warning-color), var(--mantine-color-dark-4));
+}
+
+.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}

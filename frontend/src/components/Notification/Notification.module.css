@@ -1,0 +1,30 @@
+.notif {
+    minWidth: "400px";
+	minHeight: "100px";
+}
+
+.notifPopup {
+    display: flex;
+    justify-content: center;
+    position: fixed;
+    top: 7vh;
+    right: -300px;
+    minWidth: "400px";
+	height: "100%";
+    transform: translateX(-50%);
+    z-index: 999;
+    border-radius: 5px;
+	borderStyle: "solid";
+	borderWidth: "1px";
+    box-shadow: -5px 0 10px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.5s forwards;
+}
+
+@keyframes slideIn {
+    from {
+        right: -300px;
+    }
+    to {
+        right: 0;
+    }
+}

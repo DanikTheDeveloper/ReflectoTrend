@@ -1,0 +1,68 @@
+.formContainer {
+    margin-top: 20px;
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.socialButtonContainer {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.socialButton {
+    margin-top: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50px;
+}
+
+.horizontalLine {
+	position: relative;
+	margin: 20px 0;
+}
+.horizontalLine::before,
+.horizontalLine::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	width: 40%;
+	height: 2px;
+	background-color: #000;
+}
+.horizontalLine::before {
+	right: 10px;
+}
+.horizontalLine::after {
+	left: 10px;
+}
+.horizontalLineText {
+	height: 1px;
+	display: flex;
+	justify-content: center;
+	padding: 0px 0px 20px 0px;
+}
+
+.paper {
+    width: 70%;
+    font-size: 1.5rem;
+}
+
+.googleButton {
+	background-color: '#FFFFFF';
+	color: '#757575';
+	border: '1px solid #757575';
+	border-radius: '4px';
+	padding: '10px 20px';
+	display: 'flex';
+	align-items: 'center';
+}

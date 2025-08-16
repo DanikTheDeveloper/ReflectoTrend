@@ -1,0 +1,25 @@
+# Ignore node_modules
+node_modules/
+
+# Ignore env files:
+.env
+
+## ignore air tmp files
+./tmp/main
+./tmp/build-errors.log
+backend/tmp
+backend/keys
+backend/to_exe
+backend/bin/air
+backend/bin/tmp
+main.js
+main.js*
+*.db
+
+nohup.out
+
+## ignore yarn error logs
+yarn-error.log
+
+
+

@@ -1,0 +1,14 @@
+.grid-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    height: 100vh;
+}
+
+.mainPanel {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: auto;
+    padding: 20px;
+}
+

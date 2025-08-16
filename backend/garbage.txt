@@ -1,0 +1,193 @@
+// The API key for Alpha Vantage. You can get one by signing up on their website.
+const ALPHA_VANTAGE_API_KEY = "G07UHQT3RWVUQFRH"
+
+func FetchAlphaVantageData(symbol string, start, end time.Time) ([]Share, int, error) {
+    // Form the URL for Alpha Vantage
+    url := fmt.Sprintf("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=%s&apikey=%s", symbol, ALPHA_VANTAGE_API_KEY)
+
+    resp, err := http.Get(url)
+    if err != nil {
+        return nil, http.StatusInternalServerError, err
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode != http.StatusOK {
+        return nil, resp.StatusCode, fmt.Errorf("Failed to fetch data from Alpha Vantage, status: %d", resp.StatusCode)
+    }
+
+    body, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+        return nil, http.StatusInternalServerError, err
+    }
+
+    var result map[string]interface{}
+    err = json.Unmarshal(body, &result)
+    if err != nil {
+        return nil, http.StatusInternalServerError, err
+    }
+
+    timeSeries, ok := result["Time Series (Daily)"].(map[string]interface{})
+    if !ok {
+        return nil, http.StatusInternalServerError, errors.New("Alpha Vantage response format error")
+    }
+
+    var shares []Share
+
+    for dateStr, data := range timeSeries {
+        date, err := time.Parse("2006-01-02", dateStr)
+        if err != nil {
+            return nil, http.StatusInternalServerError, fmt.Errorf("Error parsing date: %v", err)
+        }
+        if date.Before(start) || date.After(end) {
+            continue
+        }
+
+        dayData, ok := data.(map[string]interface{})
+        if !ok {
+            return nil, http.StatusInternalServerError, errors.New("Invalid day data format")
+        }
+
+        open, ok := dayData["1. open"].(string)
+        if !ok {
+            return nil, http.StatusInternalServerError, errors.New("Error retrieving 'open' value")
+        }
+        high, ok := dayData["2. high"].(string)
+        if !ok {
+            return nil, http.StatusInternalServerError, errors.New("Error retrieving 'high' value")
+        }
+        low, ok := dayData["3. low"].(string)
+        if !ok {
+            return nil, http.StatusInternalServerError, errors.New("Error retrieving 'low' value")
+        }
+        close, ok := dayData["4. close"].(string)
+        if !ok {
+            return nil, http.StatusInternalServerError, errors.New("Error retrieving 'close' value")
+        }
+
+        o, err := strconv.ParseFloat(open, 64)
+        if err != nil {
+            return nil, http.StatusBadRequest, fmt.Errorf("Failed to parse 'open' value: %v", err)
+        }
+        h, err := strconv.ParseFloat(high, 64)
+        if err != nil {
+            return nil, http.StatusBadRequest, fmt.Errorf("Failed to parse 'high' value: %v", err)
+        }
+        l, err := strconv.ParseFloat(low, 64)
+        if err != nil {
+            return nil, http.StatusBadRequest, fmt.Errorf("Failed to parse 'low' value: %v", err)
+        }
+        c, err := strconv.ParseFloat(close, 64)
+        if err != nil {
+            return nil, http.StatusBadRequest, fmt.Errorf("Failed to parse 'close' value: %v", err)
+        }
+
+        shares = append(shares, Share{
+            Date:  date,
+            Open:  o,
+            High:  h,
+            Low:   l,
+            Close: c,
+        })
+    }
+
+    return shares, http.StatusOK, nil
+}
+
+func FetchTradingViewData(symbol string, start, end time.Time) ([]Share, int, error) {
+    url := fmt.Sprintf("https://trading-view.p.rapidapi.com/v2/auto-complete?text=%s&lang=en&start=0", symbol)
+
+    req, err := http.NewRequest("GET", url, nil)
+    if err != nil {
+        return nil, http.StatusInternalServerError, err
+    }
+
+    req.Header.Add("X-RapidAPI-Key", "b933c14c9fmshfaec8f60bcbe086p198ac3jsne3a045085b79")
+    req.Header.Add("X-RapidAPI-Host", "trading-view.p.rapidapi.com")
+
+    res, err := http.DefaultClient.Do(req)
+    if err != nil {
+        return nil, http.StatusInternalServerError, err
+    }
+    defer res.Body.Close()
+
+    if res.StatusCode != http.StatusOK {
+        return nil, res.StatusCode, fmt.Errorf("Failed to fetch data from TradingView, status: %d", res.StatusCode)
+    }
+
+    body, err := ioutil.ReadAll(res.Body)
+    if err != nil {
+        return nil, http.StatusInternalServerError, err
+    }
+
+    var result map[string]interface{}
+    err = json.Unmarshal(body, &result)
+    if err != nil {
+        return nil, http.StatusInternalServerError, err
+    }
+
+    timeSeries, ok := result["Time Series (Daily)"].(map[string]interface{})
+    if !ok {
+        return nil, http.StatusInternalServerError, errors.New("TradingView response format error")
+    }
+
+    var shares []Share
+
+    for dateStr, data := range timeSeries {
+        date, err := time.Parse("2006-01-02", dateStr)
+        if err != nil {
+            return nil, http.StatusInternalServerError, fmt.Errorf("Error parsing date: %v", err)
+        }
+        if date.Before(start) || date.After(end) {
+            continue
+        }
+
+        dayData, ok := data.(map[string]interface{})
+        if !ok {
+            return nil, http.StatusInternalServerError, errors.New("Invalid day data format")
+        }
+
+        open, ok := dayData["1. open"].(string)
+        if !ok {
+            return nil, http.StatusInternalServerError, errors.New("Error retrieving 'open' value")
+        }
+        high, ok := dayData["2. high"].(string)
+        if !ok {
+            return nil, http.StatusInternalServerError, errors.New("Error retrieving 'high' value")
+        }
+        low, ok := dayData["3. low"].(string)
+        if !ok {
+            return nil, http.StatusInternalServerError, errors.New("Error retrieving 'low' value")
+        }
+        close, ok := dayData["4. close"].(string)
+        if !ok {
+            return nil, http.StatusInternalServerError, errors.New("Error retrieving 'close' value")
+        }
+
+        o, err := strconv.ParseFloat(open, 64)
+        if err != nil {
+            return nil, http.StatusBadRequest, fmt.Errorf("Failed to parse 'open' value: %v", err)
+        }
+        h, err := strconv.ParseFloat(high, 64)
+        if err != nil {
+            return nil, http.StatusBadRequest, fmt.Errorf("Failed to parse 'high' value: %v", err)
+        }
+        l, err := strconv.ParseFloat(low, 64)
+        if err != nil {
+            return nil, http.StatusBadRequest, fmt.Errorf("Failed to parse 'low' value: %v", err)
+        }
+        c, err := strconv.ParseFloat(close, 64)
+        if err != nil {
+            return nil, http.StatusBadRequest, fmt.Errorf("Failed to parse 'close' value: %v", err)
+        }
+
+        shares = append(shares, Share{
+            Date:  date,
+            Open:  o,
+            High:  h,
+            Low:   l,
+            Close: c,
+        })
+    }
+
+    return shares, http.StatusOK, nil
+}
