@@ -9,8 +9,8 @@ import (
     "encoding/json"
 )
 
-const privKeyPath = "keys/privkey.pem"     // `$ openssl genrsa -out app.rsa 2048`
-const pubKeyPath  = "keys/pubkey.pem" // `$ openssl rsa -in app.rsa -pubout > app.rsa.pub`
+const privKeyFile = "keys/private_key.pem"
+const pubKeyFile  = "keys/pubkey.pem"
 
 const RefreshTokenValidTime = time.Hour * 72
 const AuthTokenValidTime = time.Minute * 15
@@ -23,7 +23,11 @@ type ReflectoClaims struct {
 }
 
 func customParser(token string) (*jwt.Token, error) {
-    verifyBytes, err := os.ReadFile(pubKeyPath)
+    cur_dir, err := os.Getwd()
+    if err != nil {
+        return nil, err
+    }
+    verifyBytes, err := os.ReadFile(cur_dir + "/" + pubKeyFile)
     if err != nil {
         return nil, err
     }
@@ -83,7 +87,6 @@ func DecodeAuthToken(token string) (string, error) {
     if claims.ExpiresAt.Before(time.Now().UTC()) {
         return "", errors.New("Token has expired")
     }
-    // maybe check if sub actually exists in db?
     sub, err := parsedToken.Claims.GetSubject()
     if err != nil {
         return "", err
@@ -92,7 +95,6 @@ func DecodeAuthToken(token string) (string, error) {
 }
 
 func DecodeRefreshToken(token string) (string, error) {
-    // returns new auth token and refresh token
     parsedToken, err := customParser(token)
     if err != nil {
         return "", err
@@ -119,7 +121,6 @@ func DecodeRefreshToken(token string) (string, error) {
     return sub, nil
 }
 
-// CreateKey creates a JSON Web Token with a given subject.
 func CreateTokens(email string) (string, string, error) {
     authClaims := ReflectoClaims{
         "auth",
@@ -130,7 +131,7 @@ func CreateTokens(email string) (string, string, error) {
             NotBefore: jwt.NewNumericDate(time.Now().UTC()),
             Subject:   email,
             ID:        "1",
-            Audience:  jwt.ClaimStrings{"https://reflecto.trend"},
+            Audience:  jwt.ClaimStrings{os.Getenv("site_url")},
         },
     }
 
@@ -144,11 +145,16 @@ func CreateTokens(email string) (string, string, error) {
             NotBefore: jwt.NewNumericDate(time.Now().UTC()),
             Subject:   email,
             ID:        "1",
-            Audience:  jwt.ClaimStrings{"https://reflecto.trend"},
+            Audience:  jwt.ClaimStrings{os.Getenv("site_url")},
         },
     }
 
-    privBytes, err := os.ReadFile(privKeyPath)
+    cur_dir, err := os.Getwd()
+    if err != nil {
+        return "", "", err
+    }
+
+    privBytes, err := os.ReadFile(cur_dir + "/" + privKeyFile)
     if err != nil {
         log.Println("error reading privKey", err)
         return "", "", err

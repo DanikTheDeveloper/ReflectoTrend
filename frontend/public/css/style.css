@@ -927,4 +927,15 @@ a:focus {
 .footer_section p a {
   color: inherit;
 }
-/*# sourceMappingURL=style.css.map */
+
+.mantine-NavLink-section {
+    background-color: transparent;
+}
+.mantine-ThemeIcon-root {
+    background: inherit !important;
+    background-color: inherit !important;
+    color: inherit;
+    width: rem(30px);
+    height: rem(30px);
+}
+

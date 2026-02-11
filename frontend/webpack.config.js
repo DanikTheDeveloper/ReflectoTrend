@@ -1,9 +1,9 @@
+const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 const DotenvWebpackPlugin = require("dotenv-webpack");
-const path = require('path');
 module.exports = {
   entry: './src/index.js',
   output: {
-    path: path.resolve(__dirname, 'public'),
+    path: __dirname + '/public',
     publicPath: '/',
     filename: 'main.js',
   },

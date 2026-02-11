@@ -1,20 +1,12 @@
 import React from "react";
 import '@mantine/core/styles.css';
 import classes from './HeaderMenu.module.css';
-import cx from 'clsx';
 import { useNavigate } from "react-router-dom";
 import {
-    Container,
-    Avatar,
-    UnstyledButton,
     Group,
-    Text,
     Menu,
-    Tabs,
     Burger,
-    rem,
     Drawer,
-    ScrollArea,
     NavLink,
     Divider,
     Button,
@@ -26,38 +18,25 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import {
     IconChartArrows,
-    IconLogout,
-    IconSettings,
-    IconSwitchHorizontal,
+    IconLock,
     IconChevronDown,
-    IconIdBadge,
-    IconUserPlus,
-    IconLogin2,
-    IconChevronRight,
-    IconUser,
-    IconHome,
-    IconListDetails,
     IconMoon,
     IconSun,
 } from '@tabler/icons-react';
-import {useDispatch} from "react-redux";
 
 const links = [
-    {
-        link: 'docs',
-        label: 'Learn More',
-    },
-    { link: '/about', label: 'About' },
-    { link: '/pricing', label: 'Pricing' },
+    { link: '/about', label: 'ABOUT' },
+    { link: '/pricing', label: 'PRICING' },
 ];
 
 
-function Header()  {
+function Header(props = {image})  {
     const [opened, {open, close} ] = useDisclosure(false);
     const [userMenuOpened, setUserMenuOpened ] = useDisclosure(false);
     const navigate = useNavigate();
-    const dispatch = useDispatch();
-    const { colorScheme, setColorScheme } = useMantineColorScheme();
+
+    let image = "./images/reflecto_dark.svg";
+    image = props.image !== undefined ? props.image : image;
 
     const toggleColorScheme = () => {
         setColorScheme(colorScheme === "dark" ? "light" : "dark");
@@ -108,13 +87,14 @@ function Header()  {
         <header className={classes.header}>
             <div className={classes.logoLinks}>
                 <div className={classes.logo}>
-                    <img src="./logo.svg" alt="Reflecto Trend" onClick={(e) => navigate('/') }/>
+                    <img src={image} alt="Reflecto Trend" onClick={(e) => navigate('/') }/>
                 </div>
                 <Button
                     size="md"
 					ml={"10"}
                     className={classes.link}
                     onClick={(e) => handleClick(e, {link: '/signin', label: 'signin'}) }
+                    leftSection={<IconLock size="24px" stroke={"1.5"} className={classes.linkLabel}/>}
                 >
                     <span className={classes.linkLabel}>Sign In</span>
                 </Button>
@@ -123,7 +103,7 @@ function Header()  {
                     size="md"
                     className={classes.link}
                     onClick={(e) => handleClick(e, {link: '/register', label: 'Register'}) }
-                    rightSection={<IconChartArrows size="24px" stroke={"1.5"}/>}
+                    rightSection={<IconChartArrows size="24px" stroke={"1.5"} className={classes.linkLabel} />}
                 >
                     <span className={classes.linkLabel}>Get Started</span>
                 </Button>
@@ -136,19 +116,11 @@ function Header()  {
                     <Divider />
 				    <NavLink href="/about" active variant="filled" className={classes.drawerLink} label={<span className={classes.drawerLinkLabel}>About</span>} />
                     <Divider />
-				    <NavLink href="/pricing" active variant="filled" className={classes.drawerLink} label={<span className={classes.drawerLinkLabel}>Pricing</span>} />
+				    <NavLink href="/pricingDashboard" active variant="filled" className={classes.drawerLink} label={<span className={classes.drawerLinkLabel}>Pricing</span>} />
                     </div>
                 </Drawer>
                 <Group gap={10} visibleFrom="sm">
                 {items}
-                        <ActionIcon
-                            variant="outline"
-                            color="gray"
-                            size="xl"
-                            onClick={() => toggleColorScheme()}
-                        >
-                            { colorScheme === "dark" ? <IconSun size="1.5rem" stroke={1.5} /> : <IconMoon size="1.5rem" stroke={1.5} /> }
-                        </ActionIcon>
                 </Group>
             </div>
         </header>

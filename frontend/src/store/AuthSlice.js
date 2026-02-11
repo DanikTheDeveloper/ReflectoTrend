@@ -61,11 +61,29 @@ const handlePlanSelect = async (planKey) => {
 export const resetPasswordEmail = createAsyncThunk('auth/resetPasswordEmail', async (email, thunkAPI) => {
     try {
         thunkAPI.dispatch(authActions.userLoading());
-        const resp = await axiosInstance.post('/api/sendForgotPasswordEmail', {email: email});
+        const resp = await axiosInstance.post(`/api/sendForgotPasswordEmail?email=${email}`);
+        thunkAPI.dispatch(notificationActions.setStatus({type: 'success', message: resp.data, title: 'Reset Password Email'}));
+        thunkAPI.dispatch(authActions.stopLoading())
+        return resp.data;
+    }
+    catch(error) {
+        thunkAPI.dispatch(notificationActions.setStatus({type: 'error', message: error.response.data, title: 'Reset Password Email'}));
+        thunkAPI.dispatch(authActions.stopLoading())
+        throw(error);
+    }
+});
+
+export const resetPassword = createAsyncThunk('auth/resetPassword', async (data, thunkAPI) => {
+    try {
+        thunkAPI.dispatch(authActions.userLoading());
+        const resp = await axiosInstance.post('/api/resetPassword', data);
+        thunkAPI.dispatch(notificationActions.setStatus({type: 'success', message: resp.data, title: 'Reset Password'}));
+        thunkAPI.dispatch(authActions.stopLoading())
         return resp.data;
     }
     catch(error) {
         thunkAPI.dispatch(notificationActions.setStatus({type: 'error', message: error.response.data, title: 'Reset Password'}));
+        thunkAPI.dispatch(authActions.stopLoading())
         throw(error);
     }
 });

@@ -1,23 +1,12 @@
 import React from "react";
-import {
-    NavLink,
-    Container,
-    TextInput,
-    Title,
-    Text,
-    Tabs,
-    ThemeIcon,
-    Skeleton,
-    Burger
-} from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
-import { IconSearch, IconStar } from "@tabler/icons-react";
 import classes from "./Dashboard.module.css";
 import { useDispatch, useSelector } from "react-redux";
 import Chart from "./Chart/Chart";
 import SidePanel from "./SidePanel/SidePanel";
-
-import PrivateHeader from "../Home/Header/PrivateHeader";
+import AppShell from "../General/AppShell";
+import { Grid, Button } from "@mantine/core";
+import { Link } from 'react-router-dom';
+import { useDisclosure } from '@mantine/hooks';
 
 const iconDict = [
     {
@@ -32,12 +21,13 @@ const iconDict = [
         name: "Litecoin",
         icon: "ltc.svg"
     }
-]
+];
 
 const Dashboard = () => {
     const dispatch = useDispatch();
-    const stockList = useSelector((state) => state.stock.stockList)
-    let stockData = useSelector((state) => state.stock.stockData)
+    const stockList = useSelector((state) => state.stock.stockList);
+    let stockData = useSelector((state) => state.stock.stockData);
+    const [opened, {toggle}] = useDisclosure(true);
     let cryptoList = [];
     let allList = [];
 
@@ -56,9 +46,9 @@ const Dashboard = () => {
     const [searchString, setSearchString] = React.useState('');
 
     const setTab = (value) => {
-        setSelectedTab(value)
-        localStorage.setItem("selectedTab", value)
-    }
+        setSelectedTab(value);
+        localStorage.setItem("selectedTab", value);
+    };
 
     allList = stockList.map(item => ({
         startDate: item.startDate,
@@ -67,58 +57,59 @@ const Dashboard = () => {
         type: item.type,
         icon: iconDict.find(each => each.name ===  item.name) !== undefined ? iconDict.find(each => each.name === item.name).icon : "generic.svg"
     }));
-    cryptoList = allList.filter((each) => each.type === "crypto")
+    cryptoList = allList.filter((each) => each.type === "crypto");
 
     React.useLayoutEffect( () => {
         setLoading(false);
-        document.title="Dashboard"
-        //dispatch(getStockData({stockName: selectedStock, interval: selectInterval, startDate: startDate, endDate: endDate }))
-    }, [])
+        document.title = "Dashboard";
+    }, []);
 
     React.useEffect(() => {
-        //dispatch(getStockData({stockName: selectedStock, interval: "1h", startDate: startDate, endDate: endDate }))
         if ( selectedTab === "crypto") {
-            cryptoList = cryptoList.filter(item => item.name === searchString)
+            cryptoList = cryptoList.filter(item => item.name === searchString);
+        } else if (selectedTab === "all") {
+            allList = allList.filter(item => item.name === searchString);
+        } else {
+            console.log("favourites not implemented");
         }
-        else if (selectedTab === "all") {
-            allList = allList.filter(item => item.name === searchString)
-        }
-        else {
-            //favourites
-            console.log("favourites not implemented")
-        }
-    }, [ searchString ])
+    }, [ searchString ]);
 
     const setStock = (item) => {
-        selectStock(item)
-        console.log("stock is changed")
-    }
+        selectStock(item);
+    };
 
     const searchStocks = (e) => {
-        setSearchString(e.target.value)
-    }
+        setSearchString(e.target.value);
+    };
 
     return (
-        <>
-        <PrivateHeader />
-
-        <SidePanel
-            setTab={setTab}
-            selectedTab={selectedTab}
-            searchStocks={searchStocks}
-            selectedStock={selectedStock}
-            setStock={setStock}
-            allList={allList}
-            cryptoList={cryptoList}
-            isLoading={isLoading}
+        <AppShell
+            selectedIndex={0}
+            component={
+                <Grid gutter="xs" overflow="hidden">
+                    <Grid.Col span={opened ? "content" : 1}>
+                        <SidePanel
+                            opened={opened}
+                            toggle={toggle}
+                            setTab={setTab}
+                            selectedTab={selectedTab}
+                            searchStocks={searchStocks}
+                            selectedStock={selectedStock}
+                            setStock={setStock}
+                            allList={allList}
+                            cryptoList={cryptoList}
+                            isLoading={isLoading}
+                        />
+                    </Grid.Col>
+                    <Grid.Col span={opened ? 9 : 11}>
+                        <div className={classes.mainPanel}>
+                            <Chart stock={selectedStock} />
+                        </div>
+                    </Grid.Col>
+                </Grid>
+            }
         />
-        <div className={classes.mainPanel} >
-            <Chart
-                stock={selectedStock}
-            />
-        </div>
-        </>
-    )
-}
+    );
+};
 
 export default Dashboard;

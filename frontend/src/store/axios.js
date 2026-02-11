@@ -1,83 +1,70 @@
 import axios from "axios";
 
-// const baseURL = window.location.origin;
-const baseURL = "http://localhost:8081";
-const authToken = localStorage.getItem("token")
-
-let headers = {}
-if (authToken !== null) {
-    headers = {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Authorization": `Bearer ${authToken}`
-    }
-} else {
-    headers = {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-    }
+let baseURL = window.location.origin;
+if (process.env.NODE_ENV === "development") {
+	baseURL = "http://localhost:8081";
 }
+
 const axiosInstance = axios.create({
-    baseURL: baseURL,
-    timeout: 50000,
-    headers: headers
+	baseURL: baseURL,
+	timeout: 50000,
+	headers: {
+		Authorization: localStorage.getItem("token")
+			? "Bearer " + localStorage.getItem("token")
+			: null,
+		"Content-Type": "application/json",
+		accept: "application/json",
+	},
 });
 
-let isRefreshing = false;
-let failedQueue = [];
-
-const processQueue = (error, token = null) => {
-    failedQueue.forEach(prom => {
-        if (error) {
-            prom.reject(error);
-        } else {
-            prom.resolve(token);
-        }
-    })
-
-    failedQueue = [];
-}
-
 axiosInstance.interceptors.response.use(
-    response => {
-        return response;
-    },
-    error => {
-        const originalRequest = error.config;
+	(response) => {
+		return response;
+	},
+	async function (error) {
+		const originalRequest = error.config;
 
-        if (error.response.status === 401 && originalRequest.url.toString() === "/auth/refresh") {
-            return Promise.reject(error);
-        }
-        if (error.response.status === 401 && originalRequest.url.toString() !== "/auth/refresh") {
-            if (!isRefreshing) {
-                isRefreshing = true;
-                axiosInstance.post("/auth/refresh", { refresh_token: localStorage.getItem("refresh") })
-                    .then((resp) => {
-                        localStorage.setItem("token", resp.data.access_token);
-                        localStorage.setItem("refresh", resp.data.refresh_token);
-                        axiosInstance.defaults.headers["Authorization"] = `Bearer ${resp.data.access_token}`;
-                        processQueue(null, resp.data.auth);
-                        isRefreshing = false;
-                    })
-                    .catch((refreshError) => {
-                        processQueue(refreshError, null);
-                        isRefreshing = false;
-                        localStorage.removeItem("refresh");
-                        localStorage.removeItem("token");
-                    });
-            }
-            return new Promise((resolve, reject) => {
-                failedQueue.push({ resolve, reject });
-            }).then(() => {
-                originalRequest.headers["Authorization"] = `Bearer ${localStorage.getItem("token")}`;
-                return axiosInstance(originalRequest);
-            }).catch((err) => {
-                Promise.reject(err);
-            });
-        }
+		if (typeof error.response === "undefined") {
+			return Promise.reject(error);
+		}
+        console.log(error.response.status)
+        console.log("status text ", error.response.statusText)
+        console.log(originalRequest.url)
 
-        return Promise.reject(error);
-    }
+		if ( error.response.status == 401 && (originalRequest.url == "/auth/refresh" || originalRequest.url == "/auth/login") ) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("refresh");
+			return Promise.reject(error);
+		}
+        if (error.response.status == 401 && error.response.statusText == "Unauthorized") {
+			const refreshToken = localStorage.getItem("refresh");
+			if (refreshToken) {
+                const body = JSON.stringify({"refresh_token": refreshToken})
+				const tokenParts = JSON.parse(atob(refreshToken.split(".")[1]));
+				const now = Math.ceil(Date.now() / 1000);
+				if (tokenParts.exp > now) {
+					return axiosInstance.post("/auth/refresh/", body).then((response) => {
+							localStorage.setItem("token", response.data.access_token);
+							localStorage.setItem("refresh", response.data.refresh_token);
+							axiosInstance.defaults.headers["Authorization"] = "Bearer " + response.data.access_token;
+							originalRequest.headers["Authorization"] = "Bearer " + response.data.access_token;
+                            console.log("got response from refresh")
+							return axiosInstance(originalRequest);
+						})
+						.catch((error) => {
+							return Promise.reject(error);
+						});
+				} else {
+					return Promise.reject(error);
+				}
+			} else {
+				return Promise.reject(error);
+			}
+		}
+		return Promise.reject(error);
+	}
 );
+
 export default axiosInstance;
+
 

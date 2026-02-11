@@ -1,20 +1,6 @@
 import React from "react";
 import classes from "./Landing.module.css";
-import {
-    Title,
-    Button,
-    ActionButton,
-    Text,
-    Input,
-    Flex,
-    ScrollArea,
-    Box,
-} from '@mantine/core';
-import Home from "./Home.js";
-import {useNavigate} from "react-router-dom";
-import CustomCard from "../../Common/Card.js";
-import Header from "../../Home/Header/Header.js";
-import PrivateHeader from "../../Home/Header/PrivateHeader.js";
+import Home from "./Home";
 import { useSelector } from "react-redux";
 import LandingPageNotAuthenticated from "./LandingPageNotAuthenticated.js";
 
@@ -33,17 +19,9 @@ const LandingPage = () => {
     return (
         <>
         { isAuthenticated ?
-            <>
-                <PrivateHeader />
-                <ScrollArea className={classes.body} h="100%">
-                    <Flex direction="column" gap="lg" className="container mx-auto my-lg">
-                        <Home />
-                    </Flex>
-                </ScrollArea>
-            </>
+            <Home />
             :
             <>
-                <Header />
                 <LandingPageNotAuthenticated />
             </>
         }

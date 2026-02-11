@@ -17,7 +17,7 @@ const ModalForgotPassword = () => {
         validateInputOnChange: true,
         initialValues: {
             email: '',
-            isRecaptchaValid: false,
+            isRecaptchaValid: false
         },
         validate:  {
             email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
@@ -25,8 +25,8 @@ const ModalForgotPassword = () => {
         }
     });
 
-    const submitHandler = () => {
-        dispatch(resetPasswordEmail(email)).unwrap().then(() => {
+    const handleSubmit = (values) => {
+        dispatch(resetPasswordEmail(values.email)).unwrap().then(() => {
             setShow(false);
         }).catch((error) => {
             console.log(error);
@@ -53,7 +53,7 @@ const ModalForgotPassword = () => {
                 </Text>
             </Anchor>
             <Modal opened={show} onClose={handleClose} withCloseButton={false} >
-                <form className={classes.formContainer}>
+                <form className={classes.formContainer} onSubmit={form.onSubmit((values) => handleSubmit(values))}>
                     <Text size="xl" align="center" weight={500}>
                         Reset Password
                     </Text>
@@ -81,7 +81,6 @@ const ModalForgotPassword = () => {
                         fullWidth
                         rightSection={<IconSend size="24px" stroke={"1.5"} />}
                         disabled={!form.isValid()}
-                        onClick={submitHandler}
                     >
                         Send Email
                     </Button>

@@ -17,16 +17,9 @@
 
 Make sure you are able to login using psql.
 
-3. Update the password.
-	 copy-paste the above password in `.env` file and database/sqitch.conf
-
 4. Deploy the db.
 ```bash
-		sudo apt install sqitch
-		cd database
-		sqitch deploy
-		## OPTIONAL
-		sqitch verify
+        psql -d reflecto -U ref_user -f database/schema.sql
 ```
 
 5. Make keys for encrypting JSON web tokens.
@@ -52,4 +45,18 @@ Do the steps 1 to 5 from deployment, then
 ```bash
 		go install github.com/cosmtrek/air@latest
 		air
+```
+
+## How to deploy the backend with Docker:
+
+mount the keys dir
+```bash
+mkdir keys
+openssl genpkey -algorithm RSA -out ./private_key.pem
+openssl rsa -pubout -in ./private_key.pem -out ./pubkey.pem
+
+#edit docker compose to mount this keys dir
+
+docker compose --env-file .env build
+docker compose --env-file .env up -d
 ```

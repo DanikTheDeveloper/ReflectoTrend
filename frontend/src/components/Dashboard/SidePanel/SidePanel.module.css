@@ -1,96 +1,97 @@
-.grid-container {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    height: 100vh;
+.navbar {
+	width: 300px;
+	height: 100%;
+	padding: var(--mantine-spacing-md);
+	display: flex;
+	flex-direction: column;
+	margin-top: 60px;
+	background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
 }
 
-.grid-item {
-    padding: rem(2px);
+.navbarClosed {
+	width: 60px;
+	height: 100%;
+	padding: var(--mantine-spacing-md);
+	display: flex;
+	flex-direction: column;
+	margin-top: 60px;
+	background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
 }
 
-.sidePanel {
-    width: rem(300px);
-    height: rem(100vh);
-    float: left;
-    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
-    color: light-dark(var(--mantine-color-dark), var(--mantine-color-gray-0));
-    padding: 20px;
-    box-sizing: border-box;
+.navbar .category {
+	color: light-dark(var(--mantine-color-dark), var(--mantine-color-gray-0));
 }
 
-.sidePanel .header h2,
-.sidePanel .header input,
-.sidePanel .category {
-    color: light-dark(var(--mantine-color-dark), var(--mantine-color-gray-0));
+.navbar .category {
+	color: light-dark(var(--mantine-color-dark), var(--mantine-color-gray-0));
 }
 
-.sidePanel .header h2,
-.sidePanel .header input,
-.sidePanel .category {
-    color: light-dark(var(--mantine-color-dark), var(--mantine-color-gray-0));
-}
-
-.themeIcon {
-    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))
-}
 .themeIconFav {
-    color: light-dark(var(--mantine-color-dark), var(--mantine-color-gray-0));
-    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+	color: light-dark(var(--mantine-color-dark), var(--mantine-color-gray-0));
 }
 
 .sidePanel .header input {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    background-color: #1a1b2f;
-    border: none;
-    border-radius: 5px;
+	width: 100%;
+	padding: 10px;
+	margin: 10px 0;
+	background-color: #1a1b2f;
+	border: none;
+	border-radius: 5px;
 }
 
 
 .currencyList {
-    margin-top: 20px;
+	margin-top: 20px;
 }
 
 .currencyItem {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 5px;
+	border-radius: 5px;
+	margin-left: -8px;
 }
+
 .currencyItemActive {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: light-dark(var(--mantine-color-gray-3), var(--mantine-color-gray-8));
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 5px;
+	background-color: light-dark(var(--mantine-color-gray-3), var(--mantine-color-gray-8));
+	border-radius: 5px;
+	margin-left: -8px;
 }
 
 .currencyIcon {
-    color: light-dark(var(--mantine-color-dark), var(--mantine-color-gray-0));
+	color: light-dark(var(--mantine-color-dark), var(--mantine-color-gray-0));
 }
 
-.currencyItem:hover, {
-    background-color: #313348;
+.currencyItem:hover {
+	background-color: #313348;
 }
 
 .currencyItemStar {
-    margin-right: 5px;
+	margin-right: 5px;
 }
 
 .currencyItemChange {
-    font-weight: bold;
+	font-weight: bold;
 }
 
 .currencyItemChangeUp {
-    color: #00c48c;
+	color: #00c48c;
 }
 
 .currencyItemChangeDown {
-    color: #f0616d;
+	color: #f0616d;
+}
+
+.footer {
+	position: fixed;
+	float: right;
+	bottom: 50px;
+}
+
+.header {
+  padding-bottom: var(--mantine-spacing-md);
+}
+
+.iconButton {
+	background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+	height: rem(30px);
+	width: rem(30px);
+	cursor: pointer;
 }

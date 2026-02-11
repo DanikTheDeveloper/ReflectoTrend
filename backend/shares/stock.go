@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"time"
-	
     "net/http"
 
 	_ "github.com/mattn/go-sqlite3" // SQLite driver
@@ -15,7 +14,7 @@ import (
 
 // FetchFinanceData fetches and saves financial data in a database
 func FetchFinanceData(code string, interval string) ([]Share, error) {
-	dbName := code + "_" + interval + ".db"
+	dbName := "./data/" + code + "_" + interval + ".db"
 	db, err := sql.Open("sqlite3", dbName)
 	if err != nil {
 		return nil, fmt.Errorf("error opening database: %v", err)
@@ -49,6 +48,37 @@ func FetchFinanceData(code string, interval string) ([]Share, error) {
 	}
 
 	return newShares, nil
+}
+
+func FetchFinanceDataByDate(code string, interval string, startDate CustomTime, endDate CustomTime) ([]Share, error) {
+    fmt.Printf("Fetching data for %s from %s to %s\n", code, startDate.ToTime().Format(ctLayout), endDate.ToTime().Format(ctLayout))
+    dbName := "data/" + code + "_" + interval + ".db"
+    db, err := sql.Open("sqlite3", dbName)
+    if err != nil {
+        return nil, fmt.Errorf("error opening database: %v", err)
+    }
+    defer db.Close()
+
+    rows, err := db.Query("SELECT date, open, high, low, close FROM shares where date >= ? and date <= ?", startDate.ToTime().Format(ctLayout), endDate.ToTime().Format(ctLayout))
+    if err != nil {
+           return nil, fmt.Errorf("error querying data: %v", err)
+    }
+    defer rows.Close()
+
+    var shares []Share
+       for rows.Next() {
+        var share Share
+               var dateStr string
+               if err := rows.Scan(&dateStr, &share.Data.Open, &share.Data.Low ,&share.Data.High, &share.Data.Close); err != nil {
+                       return nil, fmt.Errorf("error scanning row: %v", err)
+               }
+               share.Date, err = time.Parse(ctLayout, dateStr)
+               if err != nil {
+                       return nil, fmt.Errorf("error parsing date: %v", err)
+               }
+               shares = append(shares, share)
+    }
+    return shares, nil
 }
 
 func checkDatabaseInitialization(db *sql.DB, code string) (time.Time, bool, error) {
@@ -193,6 +223,10 @@ func fetchSharesForInterval(code string, start, end time.Time, interval string) 
     if granularity == "" {
         return nil, fmt.Errorf("invalid interval for granularity determination: %s", interval)
     }
+
+    loc, _ := time.LoadLocation("America/Vancouver")
+    start = start.In(loc)
+    end = end.In(loc)
 
     url := fmt.Sprintf("https://api.pro.coinbase.com/products/%s/candles?start=%s&end=%s&granularity=%s",
         code, start.Format(time.RFC3339), end.Format(time.RFC3339), granularity)

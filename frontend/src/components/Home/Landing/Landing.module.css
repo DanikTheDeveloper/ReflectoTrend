@@ -42,3 +42,63 @@ body {
 .email-form button:hover {
     background-color: darkblue;
 }
+
+
+.bounce {
+    width: 100%;
+    -webkit-animation: upDown 5s infinite;
+    animation: upDown 5s infinite;
+
+    @-webkit-keyframes upDown {
+        0% {
+            -webkit-transform: translateY(-45px);
+            transform: translateY(-45px);
+        }
+
+        50% {
+            -webkit-transform: translateY(45px);
+            transform: translateY(45px);
+        }
+
+        100% {
+            -webkit-transform: translateY(-45px);
+            transform: translateY(-45px);
+        }
+    }
+}
+
+
+.bgImgBox {
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 50px 20px;
+}
+
+.bgImgBox2 {
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 50px 20px;
+}
+
+.anchorLabel {
+    font-size: 30px;
+    font-weight: bold;
+    padding: 10px;
+    margin: 10px;
+}
+
+.home {
+    margin-top: 70px;
+}

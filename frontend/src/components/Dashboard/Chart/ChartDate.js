@@ -1,46 +1,45 @@
 import React from "react";
-import { Button, Popover, Text, Group, Modal, Checkbox, Space, SegmentedControl} from '@mantine/core';
+import { Grid, Text,  Modal, Space, SegmentedControl, Title} from '@mantine/core';
 import classes from "./Chart.module.css";
 import {DateInput } from "@mantine/dates";
 import { useDisclosure } from "@mantine/hooks";
 
-const ChartDate = (props = { startDate, endDate, setStartDate, setEndDate, automaticFill, toggleAutomaticFill }) => {
+const ChartDate = (props = { viewRange, setViewRange, initialStartDate }) => {
 
     const [opened, {open, close} ] = useDisclosure(false);
-    const [customRange, setCustomRange] = React.useState('1m')
 
-    const handleAutoClose = () => {
-        props.toggleAutomaticFill(!props.automaticFill);
-    }
-
+    let today = new Date();
     const handleCustomRange = (value) => {
-        let today = new Date();
-        console.log(today);
-        props.setEndDate(today);
-        setCustomRange(value);
-        if ( value === 'custom') {
+        if (value === 'custom') {
             open();
         }
-        if ( value === 'all') {
-            props.setStartDate(props.initialStartDate);
+        else if (value === 'All') {
+            console.log(props.initialStartDate);
+            props.setViewRange({ ...props.viewRange, startDate: props.initialStartDate, endDate: today, range: value });
         }
-        else if ( value === '5y') {
-            props.setStartDate(new Date(new Date().setFullYear(today.getFullYear() -5)));
+        else if (value === '5Y') {
+            let startDate = new Date(new Date().setFullYear(today.getFullYear() - 5));
+            props.setViewRange({ ...props.viewRange, startDate: startDate, endDate: today, range: value });
         }
-        else if ( value === '1y') {
-            props.setStartDate(new Date(new Date().setFullYear(today.getFullYear() -1)));
+        else if (value === '1Y') {
+            let startDate = new Date(new Date().setFullYear(today.getFullYear() - 1));
+            props.setViewRange({ ...props.viewRange, startDate: startDate, endDate: today, range: value });
         }
-        else if ( value === '6m') {
-            props.setStartDate(new Date(new Date().setMonth(today.getMonth() -6)));
+        else if (value === '6M') {
+            let startDate = new Date(new Date().setMonth(today.getMonth() - 6));
+            props.setViewRange({ ...props.viewRange, startDate: startDate, endDate: today, range: value });
         }
-        else if ( value === '3m') {
-            props.setStartDate(new Date(new Date().setMonth(today.getMonth() -3)));
+        else if (value === '1M') {
+            let startDate = new Date(new Date().setMonth(today.getMonth() - 1));
+            props.setViewRange({ ...props.viewRange, startDate: startDate, endDate: today, range: value });
         }
-        else if ( value === '1m') {
-            props.setStartDate(new Date(new Date().setMonth(today.getMonth() -1)));
+        else if (value === '3M') {
+            let startDate = new Date(new Date().setMonth(today.getMonth() - 3));
+            props.setViewRange({ ...props.viewRange, startDate: startDate, endDate: today, range: value });
         }
-        else if ( value === '10d') {
-            props.setStartDate(new Date(new Date().setDate(today.getDate() -10)));
+        else if (value === '10d') {
+            let startDate = new Date(new Date().setDate(today.getDate() - 10));
+            props.setViewRange({ ...props.viewRange, startDate: startDate, endDate: today, range: value });
         }
     }
 
@@ -54,24 +53,35 @@ const ChartDate = (props = { startDate, endDate, setStartDate, setEndDate, autom
   }, [props.automaticFill]);
 
     return (
-        <div>
         <div className={classes.intervalGroup}>
             <Text align="center" weight={700} size="lg">View Range: </Text>
             <Space w="xs" />
-            <SegmentedControl color="blue" data={['10d', '1m', '3m', '6m', '1y', '5y', 'all', 'custom']} value={customRange} onChange={(value) => handleCustomRange(value)} />
+            <SegmentedControl color="blue" data={['10d', '1M', '3M', '6M', '1Y', '5Y', 'All', 'custom']} value={props.viewRange.range} onChange={(value) => handleCustomRange(value)} />
         <Space w="xs" />
-        <Modal title="View Range" opened={opened} onClose={close} >
-            <DateInput label="StartDate" placeholder="StartDate" valueFormat="DD/MM/YYYY" size="xs" value={props.startDate} onChange={(value) => {props.setStartDate(value)}} />
-            <DateInput label="EndDate" placeholder="EndDate" valueFormat="DD/MM/YYYY" size="xs" value={props.endDate} onChange={(value) => {props.setEndDate(value)}} />
-            <div class={classes.horizontalLine}>
-                <span class={classes.horizontalLineText}>Or</span>
-            </div>
-            <Checkbox label="Fill on horizontal scroll" size="md" checked={props.automaticFill} onChange={() => (handleAutoClose()) }/>
+        <Modal title={<Title order={3}>View Range</Title>} opened={opened} onClose={close} >
+            <Grid>
+            <Grid.Col span={6}>
+            <DateInput
+                label={<Text order={2}> Start Date </Text>}
+                placeholder="StartDate"
+                valueFormat="DD/MM/YYYY"
+                size="md" value={props.viewRange.startDate}
+                onChange={(value) => {props.setStartDate(value)}}
+            />
+            </Grid.Col>
+            <Grid.Col span={6}>
+            <DateInput
+                label={<Text order={2}> End Date</Text>}
+                placeholder="StartDate"
+                valueFormat="DD/MM/YYYY"
+                size="md" value={props.viewRange.startDate}
+                onChange={(value) => {props.setEndDate(value)}}
+            />
+            </Grid.Col>
+            </Grid>
         </Modal>
-        <Button onClick={open}>Custom</Button>
-        </div>
         </div>
     );
 }
 
-export default React.memo(ChartDate);
+export default ChartDate;

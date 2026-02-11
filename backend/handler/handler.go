@@ -1,11 +1,27 @@
 package handler
 
 import (
-    "net/http"
     "reflecto.trend/database"
     "log"
     "golang.org/x/oauth2"
+	"net/http"
+	"github.com/julienschmidt/httprouter"
+
 )
+
+func WrapInitGoogleAuth(env *Env, authConf *OauthConf, fn httprouter.Handle) func(e *Env, authConf *OauthConf, w http.ResponseWriter, r *http.Request) error {
+	return func(e *Env, authConf *OauthConf, w http.ResponseWriter, r *http.Request) error {
+		fn(w, r, httprouter.Params{})
+		return nil
+	}
+}
+
+func WrapGoogleAuthCallBack(env *Env, authConf *OauthConf, fn httprouter.Handle) func(e *Env, authConf *OauthConf, w http.ResponseWriter, r *http.Request) error {
+	return func(e *Env, authConf *OauthConf, w http.ResponseWriter, r *http.Request) error {
+		fn(w, r, httprouter.Params{})
+		return nil
+	}
+}
 
 // Error represents a handler error. It provides methods for a HTTP status
 // code and embeds the built-in error interface.
@@ -32,7 +48,7 @@ func (se StatusError) Status() int {
 
 // A (simple) example of our application-wide configuration.
 type Env struct {
-	DB   *database.UserDB
+	DB   database.Service
 	Port int
 	Host string
 }

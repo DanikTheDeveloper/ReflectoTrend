@@ -1,25 +1,31 @@
 import React from "react";
-import { Container, Paper, Grid, TextInput, Select, Button,  Slider, Text, Group, SimpleGrid, Accordion } from '@mantine/core';
+import { Container, Title, Grid, TextInput, Select, Button,  Slider, Text, Group, SimpleGrid, Accordion } from '@mantine/core';
 import {DateInput } from "@mantine/dates";
 import classes from "./Chart.module.css";
 import { useDispatch, useSelector } from "react-redux";
+import { formatDate } from "../../Utils/Utils";
+import AnalyseResults from "./AnalyseResults";
 
-const AnalyseForm = () => {
-    const stockList = useSelector( (state) => state.stock.stockList);
+const AnalyseForm = (props = {analyseSlice}) => {
+	const isAnalyseLoading = useSelector( (state) => state.stock.isAnalyseLoading);
 
     const [formData, setFormData] = React.useState({
-        sliceToAnalyse: {
-            startDate: new Date(),
-            endDate: new Date(),
-        },
-        minimumSimilarityRate: 50, // Default value
+        startDate: new Date(),
+        endDate: new Date(),
+        minimumSimilarityRate: 50,
     });
-
-    const [value, setValue] = React.useState(null);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log(formData);
+
+        const data = {
+            sliceToAnalyse: [
+                formatDate(formData.startDate),
+                formatDate(formData.endDate),
+            ],
+            minimumSimilarityRate: formData.minimumSimilarityRate
+        }
+        props.analyseSlice(data)
     };
     return (
         <>
@@ -27,44 +33,44 @@ const AnalyseForm = () => {
 
         <Accordion.Item value="analyse" >
         <Accordion.Control>
-            Analyse a slice
+            <Title order={2}>
+            Analyse Data
+            </Title>
         </Accordion.Control>
         <Accordion.Panel>
             <Container size="md" >
                 <form onSubmit={handleSubmit}>
-                    <SimpleGrid cols={1} className={classes.gridContainer}>
+                    <SimpleGrid cols={2} className={classes.gridContainer}>
                     <div>
                         <Text size="sm" weight={700} style={{ marginBottom: '8px' }}>
-                            Slice To Analyze
+                            Slice To Analyze:
                         </Text>
                         <Group>
                             <DateInput
                                 label="Start Date"
-                                value={formData.sliceToAnalyse.startDate}
+                                value={formData.startDate}
                                 onChange={(value) =>
                                     setFormData({
                                         ...formData,
-                                        sliceToAnalyse: { ...formData.sliceToAnalyse, startDate: value },
+                                        startDate: value
                                     })
                                 }
                             />
                             <DateInput
                                 label="End Date"
-                                value={formData.sliceToAnalyse.endDate}
+                                value={formData.endDate}
                                 minDate={new Date(0)} // Set a minimum date, e.g., '1970-01-01'
                                 maxDate={new Date()} // Set a maximum date, e.g., today
                                 onChange={(value) =>
                                     setFormData({
                                         ...formData,
-                                        sliceToAnalyse: { ...formData.sliceToAnalyse, endDate: value },
+                                        endDate: value
                                     })
                                 }
                             />
                         </Group>
-                    </div>
-                    <div>
-                        <Text size="sm" weight={700} style={{ marginBottom: '8px' }}>
-                            Minimum Similarity Rate
+                        <Text size="sm" weight={700} style={{ marginTop: '8px', marginBottom: '8px' }}>
+                            Minimum Similarity Rate:
                         </Text>
                         <div className={classes.slider}>
                         <Slider
@@ -83,11 +89,12 @@ const AnalyseForm = () => {
 
                         />
                         </div>
-                    </div>
-                    <div>
-                        <Button type="submit" variant="filled" color="blue" style={{ marginTop: '16px' }}>
+                        <Button type="submit" variant="filled" color="blue" style={{ marginTop: '16px' }} loading={isAnalyseLoading}>
                             Start Analysis
                         </Button>
+                    </div>
+                    <div>
+                        <AnalyseResults />
                     </div>
                     </SimpleGrid>
                 </form>

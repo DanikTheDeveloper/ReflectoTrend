@@ -1,11 +1,11 @@
 import React from "react";
 import '@mantine/core/styles.css';
 import classes from './PrivateHeader.module.css';
-import cx from 'clsx';
 import { useNavigate } from "react-router-dom";
 import {
     Avatar,
     UnstyledButton,
+    NavLink,
     Group,
     Text,
     Menu,
@@ -27,42 +27,52 @@ import {
 import {useSelector} from "react-redux";
 import {useDispatch} from "react-redux";
 
-function PrivateHeader()  {
-    const isAuthenticated = useSelector(state => state.auth.isAuthenticated)
-    const userId = useSelector(state => state.auth.id)
+function PrivateHeader(props = {image, selectedIndex })  {
     const userEmail = useSelector(state => state.auth.email)
     const user = {
         image: null,
     }
     const [opened, {open, close} ] = useDisclosure(false);
-    const [userMenuOpened, setUserMenuOpened ] = useDisclosure(false);
     const navigate = useNavigate();
-    const dispatch = useDispatch();
     const { colorScheme, setColorScheme } = useMantineColorScheme();
+    const [ index, setIndex] = React.useState(props.selectedIndex);
+
+    const handleIndex = (value) => {
+        setIndex(value);
+        if (value === 1) {
+            navigate("/")
+        }
+        else if (value === 0) {
+            navigate("/dashboard")
+        }
+        else if (value === 2) {
+            navigate("/blog")
+        }
+        else if (value === 3) {
+            navigate("/pricingDashboard")
+        }
+    }
+
 
     const toggleColorScheme = () => {
         setColorScheme(colorScheme === "dark" ? "light" : "dark");
     }
 
-    const handleClick = (e, link) => {
-        e.preventDefault();
-        navigate(link.link);
-    }
+    let image = colorScheme === "dark" ? "./images/reflecto_dark.svg" : "./images/reflecto.svg";
+    image = props.image !== undefined ? props.image : image;
     const toggle = () => (opened ? close() : open());
 
     return (
         <header className={classes.header}>
             <div className={classes.logoLinks}>
                 <div className={classes.logo} >
-                    <img src="./logo.svg" alt="Reflecto Trend" onClick={(e) => navigate('/') } />
+                    <img src={image} alt="Reflecto Trend" onClick={() => navigate('/') }/>
                 </div>
               <Menu>
                 <Menu.Target>
-                    <UnstyledButton
-                        className={cx(classes.user, { [classes.userActive]: userMenuOpened })}
-                    >
+                    <ActionIcon variant="gradient" aria_label="Menu" gradient={{ from: 'blue', to: 'violet', deg: 90 }} size="l">
                         <Avatar src={user.image} alt={userEmail} radius="xl" size={40} />
-                    </UnstyledButton>
+                    </ActionIcon>
                 </Menu.Target>
                     <>
                         <Menu.Dropdown>
@@ -117,6 +127,35 @@ function PrivateHeader()  {
                                 </UnstyledButton>
                     </div>
                 </Drawer>
+                <div className={classes.navbar}>
+                        <NavLink
+                            label="Home"
+                            active
+                            variant={index === 1 ? "light" : "subtle"}
+                            onClick={() => handleIndex(1)}
+                        />
+                        <Space w="md" />
+                        <NavLink
+                            label="Dashboard"
+                            active
+                            variant={index === 0 ? "light" : "subtle"}
+                            onClick={() => handleIndex(0)}
+                        />
+                        <Space w="md" />
+                        <NavLink
+                            label="Blog"
+                            active
+                            variant={index === 2 ? "light" : "subtle"}
+                            onClick={() => handleIndex(2)}
+                        />
+                        <Space w="md" />
+                        <NavLink
+                            label="Pricing"
+                            active
+                            variant={index === 3 ? "light" : "subtle"}
+                            onClick={() => handleIndex(3)}
+                        />
+                </div>
                 <Group gap={10} visibleFrom="sm">
                 {
                     colorScheme === "dark" ?

@@ -1,39 +1,20 @@
 [
   {
-    "name": "Gold",
-    "code": "XAU-USD",
-	  "type": "commodity"
-  },
-  {
-    "name": "Silver",
-    "code": "XAG-USD",
-    "startDate": "2020-08-12 00:00",
-	  "type": "commodity"
-  },
-  {
     "name": "Bitcoin",
     "code": "BTC-USD",
     "startDate": "2015-07-19 00:00",
-	  "type": "crypto"
+    "type": "crypto"
   },
   {
     "name": "Ethereum",
     "code": "ETH-USD",
-    "startDate": "2016-05-17 00:00",
-	  "type": "crypto"
-  },
-  {
-    "name": "West Texas Intermediate Crude Oil",
-    "code": "WTI-USD"
-  },
-  {
-    "name": "Natural Gas",
-    "code": "NG-USD"
+    "startDate": "2016-05-18 00:00",
+	"type": "crypto"
   },
   {
     "name": "Litecoin",
     "code": "LTC-USD",
     "startDate": "2016-08-16 00:00",
-	  "type": "crypto"
+    "type": "crypto"
   }
 ]

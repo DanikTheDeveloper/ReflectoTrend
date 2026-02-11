@@ -12,20 +12,22 @@ const Footer = () => {
 
     return (
         <div className={classes.footer}>
-            <p className={classes.linklabel}>
-            Reflecto Trade &copy; {" "}
-            <span id="currentYear">
-                {currentYear}
-            </span>
-            {" "} | {" "}
-            <Anchor
-                className={classes.linklabel}
-                onClick={() => openContactUs()}
-                variant="outline"
-            >
-                <span>Contact Us </span>
-            </Anchor>
-            </p>
+            <div className={classes.footerData}>
+                <p className={classes.linklabel}>
+                    Reflecto Trade &copy; {" "}
+                    <span id="currentYear">
+                        {currentYear}
+                    </span>
+                    {" "} | {" "}
+                    <Anchor
+                        className={classes.linklabel}
+                        onClick={() => openContactUs()}
+                        variant="outline"
+                    >
+                        <span>Contact Us </span>
+                    </Anchor>
+                </p>
+            </div>
         </div>
     );
 }

@@ -1,84 +1,85 @@
 .header {
 	display: flex;
 	align-items: center;
-    flex-direction: row;
-    justify-content: space-between;
-    height: rem(84px);
-    border-bottom: rem(1px) solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+	flex-direction: row;
+	justify-content: space-between;
+	height: rem(84px);
 }
 
 .logoLinks {
-    display: flex;
-    align-items: center;
-    flex-direction: row;
-    justify-content: space-between;
-    height: rem(84px);
+	display: flex;
+	align-items: center;
+	flex-direction: row;
+	justify-content: space-between;
+	height: rem(84px);
 }
 
 .logo {
-    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-0));
 	height: rem(32px);
 	padding: rem(5px) rem(14px) rem(5px) rem(14px);
-    margin: rem(10px) rem(5px) rem(10px) rem(30px);
+	margin: rem(10px) rem(5px) rem(10px) rem(30px);
 	border-right: rem(1px) solid light-dark(var(--secondary-color), var(--mantine-color-gray-4));
+	cursor: pointer;
 }
 
 
 .inner {
-    height: rem(84px);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-direction: row;
-    float: right;
-    margin-right: rem(50px);
+	height: rem(84px);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-direction: row;
+	float: right;
+	margin-right: rem(50px);
 }
 
 .link {
-  line-height: 1;
-  padding: rem(8px) rem(12px);
-  border-radius: var(--mantine-radius-sm);
-  color: light-dark(var(--secondary-color), var(--secondary-color));
+	line-height: 1;
+	padding: rem(8px) rem(12px);
+	border-radius: var(--mantine-radius-sm);
+	color: light-dark(var(--secondary-color), var(--secondary-color));
 
-  @mixin hover {
-    background-color: light-dark(var(--secondary-color), var(--mantine-color-dark-6));
-  }
+	@mixin hover {
+		background-color: light-dark(var(--secondary-color), var(--mantine-color-dark-6));
+	}
 }
 
 .drawer {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    justify-content: flex-start;
+	display: flex;
+	align-items: center;
+	flex-direction: column;
+	justify-content: flex-start;
 }
 
 .drawerLink {
-    color: light-dark(var(--secondary-color), var(--secondary-color));
-    border-radius: var(--mantine-radius-sm);
+	color: light-dark(var(--secondary-color), var(--secondary-color));
+	border-radius: var(--mantine-radius-sm);
 
-  @mixin hover {
-    color: light-dark(var(--secondary-color), var(--secondary-color));
-    background-color: light-dark(var(--secondary-color), var(--mantine-color-dark-6));
-    .drawerLinkLabel {
-      color: var(--mantine-color-gray-0);
-    }
-  }
+	@mixin hover {
+		color: light-dark(var(--secondary-color), var(--secondary-color));
+		background-color: light-dark(var(--secondary-color), var(--mantine-color-dark-6));
+
+		.drawerLinkLabel {
+			color: var(--mantine-color-gray-0);
+		}
+	}
 }
+
 .drawerLinkLabel {
 	color: var(--mantine-color-black);
 }
 
 .linkLabel {
-    color: var(--mantine-color-gray-0);
-    margin-right: rem(5px);
+	color: var(--mantine-color-gray-0);
+	margin-right: rem(5px);
 }
 
 .burger {
-  @media (max-width: 900px) {
-    display: none;
-  }
+	@media (max-width: 900px) {
+		display: none;
+	}
+
 	@media (max-width: 600px) {
 		display: block;
 	}
 }
-
