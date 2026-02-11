@@ -26,43 +26,211 @@
     border-radius: 50px;
 }
 
-.horizontalLine {
-	position: relative;
-	margin: 20px 0;
-}
-.horizontalLine::before,
-.horizontalLine::after {
-	content: "";
-	position: absolute;
-	top: 50%;
-	width: 40%;
-	height: 2px;
-	background-color: #000;
-}
-.horizontalLine::before {
-	right: 10px;
-}
-.horizontalLine::after {
-	left: 10px;
-}
-.horizontalLineText {
-	height: 1px;
-	display: flex;
-	justify-content: center;
-	padding: 0px 0px 20px 0px;
-}
-
 .paper {
     width: 100%;
     font-size: 1.5rem;
 }
 
 .googleButton {
-	background-color: '#FFFFFF';
-	color: '#757575';
-	border: '1px solid #757575';
-	border-radius: '4px';
-	padding: '10px 20px';
-	display: 'flex';
-	align-items: 'center';
+	border: 1px solid #757575;
+	border-radius: 5px;
+	padding: 10px 20px;
+	display: flex;
+	align-items: center;
 }
+
+.orLine {
+        flex:       1;
+        height:     1px;
+        background: rgba(167,139,250,0.18);
+}
+
+.orDivider {
+    display:    flex;
+    align-items: center;
+    gap:        12px;
+    margin:     20px 0;
+    color:      rgba(167,139,250,0.45);
+    fontSize:   12px;
+    letter-spacing: 0.08em;
+}
+
+.panel {
+    position: relative;
+    min-height: calc(100vh - 90px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 56px 48px;
+}
+
+@media (max-width: 992px) {
+    .panel {
+        min-height: auto;
+        padding: 32px 20px;
+        text-align: center;
+        align-items: center;
+    }
+}
+
+.formCard {
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 18px;
+    padding: 36px 32px;
+    margin-top: 30px;
+}
+
+.eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: #a78bfa; 
+    background: rgba(97,61,228,0.15);
+    border: 1px solid rgba(97,61,228,0.30);
+    border-radius: 100px;
+    padding: 5px 15px;
+    margin-bottom: 26px;
+}
+
+.dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #a78bfa;
+    box-shadow: 0 0 7px #a78bfa;
+    animation: heroPulse 2s ease-in-out infinite;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.18;
+    color: #EDE9FF; 
+    letter-spacing: -0.025em;
+    margin-bottom: 4px;
+}
+
+@media (max-width: 992px) {
+    .title {
+        font-size: 2rem;
+    }
+     .subtitle {
+        font-size: 1.15rem;
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .title {
+        font-size: 1.7rem;
+        line-height: 1.25;
+    }
+    .subtitle {
+        font-size: 1rem;
+    }
+    .featureRow {
+        font-size: 12.5px;
+        gap: 10px;
+    }
+    .featureIcon {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+    }
+    .formCard {
+        padding: 24px 18px;
+        margin-top: 16px;
+        border-radius: 14px;
+    }
+}
+
+
+.accent {
+    color: #FCE073;
+    text-shadow: 0 0 24px rgba(252,224,115,0.45);
+    font-style: italic;
+}
+
+.cursor {
+    display: inline-block;
+    width: 3px;
+    height: 0.8em;
+    background: #FCE073;
+    margin-left: 3px;
+    vertical-align: middle;
+    border-radius: 2px;
+    box-shadow: 0 0 9px rgba(252,224,115,0.80);
+}
+
+.divider {
+    width: 44px;
+    height: 3px;
+    background: linear-gradient(90deg, #613DE4, #FCE073);
+    border-radius: 4px;
+    margin: 22px 0;
+}
+
+.subtitle {
+    font-size: 1.545rem;
+    color: rgba(210,200,255,0.65);
+    line-height: 1.7;
+    max-width: 330px;
+    margin-bottom: 34px;
+}
+
+.featureList {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+}
+
+.featureRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13.5px;
+    color: rgba(220,210,255,0.82);
+}
+
+.featureIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: rgba(97,61,228,0.18);
+    border: 1px solid rgba(97,61,228,0.30);
+    color: #a78bfa;
+    flex-shrink: 0;
+}
+
+.footer {
+    margin-top: 46px;
+    padding-top: 22px;
+    border-top: 1px solid rgba(167,139,250,0.12);
+    font-size: 11.5px;
+    color: rgba(167,139,250,0.38);
+    letter-spacing: 0.04em;
+}
+
+.formLabel {
+    color: rgba(220,210,255,0.90);
+}
+
+.formText {
+    color: rgba(200,190,255,0.75);
+}
+
+@keyframes heroPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.1); }
+}
+

@@ -46,7 +46,7 @@ type service struct {
 	db *sql.DB
 }
 
-func NewDBConnection(Host, Port, User, Password, DBName, SSL_MODE string) (Service, error) {
+func NewDBConnection(Host, Port, User, Password, DBName, SSL_MODE, Schema string) (Service, error) {
 	config := DatabaseConfig{
 		Host:     Host,
 		Port:     utils.Atoi(Port),
@@ -54,7 +54,7 @@ func NewDBConnection(Host, Port, User, Password, DBName, SSL_MODE string) (Servi
 		Password: Password,
 		DBName:   DBName,
 		SSLMode:  SSL_MODE,
-        Schema:   "reflecto",
+        Schema:   Schema,
 	}
 
 	connStr := fmt.Sprintf(

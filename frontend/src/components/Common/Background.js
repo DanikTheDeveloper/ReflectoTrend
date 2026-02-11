@@ -1,15 +1,5 @@
 import React from "react";
 
-/**
- * Brand tokens (mirror your Mantine theme)
- * ─────────────────────────────────────────
- * primary   #613DE4   violet
- * secondary #4E31B6   deep violet
- * accent    #FCE073   gold
- * bg        #566FAE   slate-blue  (used as a subtle mid-tone reference)
- */
-
-// ─── Inject keyframes + utility animation classes once ───────────────────────
 if (typeof document !== "undefined" && !document.getElementById("page-bg-keyframes")) {
     const style = document.createElement("style");
     style.id = "page-bg-keyframes";
@@ -35,27 +25,16 @@ if (typeof document !== "undefined" && !document.getElementById("page-bg-keyfram
     document.head.appendChild(style);
 }
 
-/**
- * PageBackground
- * Wraps any page in the branded dark-violet + dot-grid + glow-orb background.
- *
- * Usage:
- *   <PageBackground>
- *     <YourPage />
- *   </PageBackground>
- */
 const PageBackground = ({ children, style: extraStyle = {} }) => (
     <div
         style={{
             position:   "relative",
             minHeight:  "100vh",
             overflow:   "hidden",
-            // Deep violet base — dark enough for white text, rich enough for brand colours
             background: "linear-gradient(145deg, #12082e 0%, #1c1050 45%, #0e1a3a 100%)",
             ...extraStyle,
         }}
     >
-        {/* ── dot grid — violet tint ─────────────────────────────────────── */}
         <div style={{
             position:        "absolute",
             inset:           0,
@@ -65,7 +44,6 @@ const PageBackground = ({ children, style: extraStyle = {} }) => (
             zIndex:          0,
         }} />
 
-        {/* ── primary violet orb — top-right ───────────────────────────── */}
         <div style={{
             position:     "absolute",
             top:          "-140px",
@@ -79,7 +57,6 @@ const PageBackground = ({ children, style: extraStyle = {} }) => (
             zIndex:        0,
         }} />
 
-        {/* ── secondary deeper violet — bottom-left ────────────────────── */}
         <div style={{
             position:     "absolute",
             bottom:       "-130px",
@@ -93,7 +70,6 @@ const PageBackground = ({ children, style: extraStyle = {} }) => (
             zIndex:        0,
         }} />
 
-        {/* ── gold accent glow — mid-left edge ─────────────────────────── */}
         <div style={{
             position:     "absolute",
             top:          "35%",
@@ -107,7 +83,6 @@ const PageBackground = ({ children, style: extraStyle = {} }) => (
             zIndex:        0,
         }} />
 
-        {/* ── soft central depth haze ──────────────────────────────────── */}
         <div style={{
             position:     "absolute",
             top:          "50%",
@@ -121,7 +96,6 @@ const PageBackground = ({ children, style: extraStyle = {} }) => (
             zIndex:        0,
         }} />
 
-        {/* ── page content ─────────────────────────────────────────────── */}
         <div style={{ position: "relative", zIndex: 1 }}>
             {children}
         </div>

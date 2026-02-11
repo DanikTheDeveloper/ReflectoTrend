@@ -19,7 +19,9 @@ Make sure you are able to login using psql.
 
 4. Deploy the db.
 ```bash
-        psql -d reflecto -U ref_user -f database/schema.sql
+    cd database/
+    sqitch deploy 
+    sqitch verify 
 ```
 
 5. Make keys for encrypting JSON web tokens.

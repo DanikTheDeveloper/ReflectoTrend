@@ -3,3 +3,23 @@
     flex-grow: 1;
     flex-direction: column;
 }
+
+.coolBg {
+    background: linear-gradient(145deg, #12082e 0%, #1c1050 45%, #0e1a3a 100%);
+}
+
+.formCard {
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 18px;
+    padding: 28px 26px;
+}
+
+.divider {
+    width: 44px;
+    height: 3px;
+    background: linear-gradient(90deg, #613DE4, #FCE073);
+    border-radius: 4px;
+}
+

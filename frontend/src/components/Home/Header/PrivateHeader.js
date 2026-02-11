@@ -58,7 +58,7 @@ function PrivateHeader(props = {image, selectedIndex })  {
         setColorScheme(colorScheme === "dark" ? "light" : "dark");
     }
 
-    let image = colorScheme === "dark" ? "./images/reflecto_dark.svg" : "./images/reflecto.svg";
+    let image = colorScheme === "dark" ? "./images/reflecto.svg" : "./images/reflecto.svg";
     image = props.image !== undefined ? props.image : image;
     const toggle = () => (opened ? close() : open());
 

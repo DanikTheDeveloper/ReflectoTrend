@@ -16,10 +16,18 @@ body {
 }
 
 .title {
-    font-size: 30px;
-    font-weight: bold;
-    padding: 10px;
-    margin: 10px;
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.18;
+    color: #EDE9FF; 
+    letter-spacing: -0.025em;
+    margin-bottom: 4px;
+}
+.subtitle {
+    font-size: 1.545rem;
+    color: rgba(210,200,255,0.65);
+    line-height: 1.7;
+    margin-bottom: 34px;
 }
 
 .email_form input[type=email] {
@@ -93,6 +101,7 @@ body {
 }
 
 .anchorLabel {
+    color: #EDE9FF; 
     font-size: 30px;
     font-weight: bold;
     padding: 10px;

@@ -5,6 +5,7 @@ import classes from './Landing.module.css';
 import { useSelector } from 'react-redux';
 import PrivateHeader from "../../Home/Header/PrivateHeader.js";
 import Header from '../../Home/Header/Header.js';
+import PageBackground from "../../Common/Background";
 
 const icons = {
     facebook: FaFacebookF,
@@ -32,15 +33,16 @@ const Team = () => {
     const currentYear = new Date().getFullYear();
     return (
         <>
+        <PageBackground>
             {isAuthenticated ? <PrivateHeader /> : <Header />}
             <Container>
                 <Flex gap="md" justify="center" align="center" direction="column" wrap="wrap" padding={40}>
-                    <Text align="center" style={{ fontSize: "32px" }}>
-                        Our <span style={{ color: "#00bbf0" }}>Team</span>
+                    <Text align="center" style={{ fontSize: "32px" , color: "#EDE9FF"}}>
+                        Our Team
                     </Text>
                     <Flex gap="sm" direction="row" justify="center">
-                        <Card shadow="sm" padding="md" radius="md" >
-                            <Image src="images/team-1.jpg" class="img1" alt="" style={{ borderRadius: "50%" }} />
+                        <Card shadow="sm" padding="md" radius="md" style={{background: 'linear-gradient(40deg, #12082e 0%, #1c1050 45%, #0e1a3a 100%)' }} >
+                            <Image src="images/team-1.jpg" alt="" style={{ borderRadius: "50%" }} />
                             <Flex direction="column" justify="center" align="center">
                                 <Text size="lg">
                                     Denny
@@ -51,8 +53,8 @@ const Team = () => {
                             </Flex>
                             <SocialMediaBar />
                         </Card>
-                        <Card shadow="sm" padding="md" radius="md" >
-                            <Image src="images/team-3.jpg" class="img1" alt="" style={{ borderRadius: "50%" }} />
+                        <Card shadow="sm" padding="md" radius="md" style={{background: 'linear-gradient(40deg, #12082e 0%, #1c1050 45%, #0e1a3a 100%)' }} >
+                            <Image src="images/team-3.jpg" alt="" style={{ borderRadius: "50%" }} />
                             <Flex direction="column" justify="center" align="center">
                                 <Text size="lg">
                                     Piyush Khurana
@@ -67,9 +69,7 @@ const Team = () => {
                     <Space h="lg" />
                 </Flex>
             </Container>
-                <Flex direction="row" justify="center" align="center" wrap="wrap" style={{ height: "45px", width: "100%", color: "white" }}>
-                    Reflecto Trend &copy; {" " + currentYear + " "} All Rights Reserved
-                </Flex>
+        </PageBackground>
         </>
     );
 }

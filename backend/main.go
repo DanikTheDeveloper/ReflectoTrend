@@ -52,7 +52,8 @@ func main() {
 		os.Getenv("DB_USER"),
 		os.Getenv("DB_PASSWORD"),
 		os.Getenv("DB_NAME"),
-		os.Getenv("DB_SSL_MODE"))
+		os.Getenv("DB_SSL_MODE"),
+		os.Getenv("DB_SCHEMA"))
 	if err != nil {
 		fmt.Println(err)
 		panic("cannot connect to database")
@@ -98,8 +99,7 @@ func registerRoutes(env *handler.Env) http.Handler {
 			Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
 		}}
 
-	// Your Stripe secret key should be set here
-	stripe.Key = "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"
+	stripe.Key = os.Getenv("STRIPE_KEY")
 
 	// Public routes
     r.Handler(http.MethodPost, "/auth/register", handler.Handler{Env: env, H: users.HandleRegister})

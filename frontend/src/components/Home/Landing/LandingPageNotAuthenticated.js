@@ -7,6 +7,7 @@ import AutoPlay from "embla-carousel-autoplay";
 import { IconPhone, IconMail } from '@tabler/icons-react';
 import { useNavigate } from "react-router-dom";
 import '@mantine/carousel/styles.css';
+import PageBackground from "../../Common/Background";
 
 const LandingPageNotAuthenticated = () => {
     const autoplay = React.useRef(AutoPlay({ delay: 7000 }));
@@ -23,9 +24,9 @@ const LandingPageNotAuthenticated = () => {
 
     return (
         <>
-        <BackgroundImage src="images/hero-bg.png" position="center" size="cover" alt="bg" >
+        <PageBackground>
                 <Header
-                    image="./images/reflecto_dark.svg"
+                    image="./images/reflecto.svg"
                 />
                 <Carousel
                     withControls={false}
@@ -79,7 +80,7 @@ const LandingPageNotAuthenticated = () => {
                                     for patterns that can help you predict the future.
                                 </Text>
                             </Flex>
-                            <Image className={classes.bounce} radius="md" h={400} w="auto" fit="contain" src="images/about-img.png" alt="" />
+                            <Image className={classes.bounce} radius="md" h={400} w="auto" fit="contain" src="images/slider-img2.png" alt="" />
                         </Flex>
                     </Carousel.Slide>
                     <Carousel.Slide>
@@ -94,17 +95,16 @@ const LandingPageNotAuthenticated = () => {
                                     that exhibit stark similarities with current movements.
                                 </Text>
                             </Flex>
-                            <Image className={classes.bounce} radius="md" h={400} w="auto" fit="contain" src="images/slider-img2.png" alt="" />
+                            <Image className={classes.bounce} radius="md" h={400} w="auto" fit="contain" src="images/slider-img3.png" alt="" />
                         </Flex>
                     </Carousel.Slide>
                 </Carousel>
-        </BackgroundImage>
             <Container>
                 <Flex gap="md" justify="center" align="center" direction="column" wrap="wrap" >
-                    <Text align="center" style={{ fontSize: "32px" }}>
+                    <Text align="center" style={{ fontSize: "32px" }} class={classes.title}>
                         Our Services
                     </Text>
-                    <Text align="center" style={{ fontSize: "16px" }}>
+                    <Text align="center" style={{ fontSize: "16px" }} class={classes.subtitle}>
                         We understand that within the flow of market trends lie hidden parallels and recurring motifs, often shadowing the potential of lucrative opportunities.
                     </Text>
                     <Space h="lg" />
@@ -163,7 +163,7 @@ const LandingPageNotAuthenticated = () => {
                         About <span style={{ color: "#00bbf0" }}>Us </span>
                     </Text>
                     <Text style={{ fontSize: "16px", color: "white" }}>
-                        Pet project for two amigos!
+                        Pet project by two amigos!
                     </Text>
                 </Flex>
                 <Flex gap="sm" justify="center" align="flex-start" direction="row" wrap="wrap">
@@ -182,18 +182,18 @@ const LandingPageNotAuthenticated = () => {
                 <Space h="lg" />
                 <Flex direction="row" justify="space-evenly" align="center">
                     <Flex direction="column" justify="space-between" align="flex-start" >
-                        <Text style={{ fontSize: "24px" }} >
+                        <Text style={{ fontSize: "24px" }} class={classes.title}>
                             Contact Us
                         </Text>
                         <Space h="md" />
-                        <Anchor href="index.html" underline="hover" className={classes.anchorLabel}>
+                        <Anchor href="#" underline="hover" className={classes.anchorLabel}>
                             <IconPhone size="24px" />
                             <span>
                                 Call +91 9354340241
                             </span>
                         </Anchor>
                         <Space h="sm" />
-                        <Anchor href="index.html" underline="hover" className={classes.anchorLabel}>
+                        <Anchor href="#" underline="hover" className={classes.anchorLabel}>
                             <IconMail size="24px" />
                             <span>
                                 piyushkhurana38@gmail.com
@@ -201,7 +201,7 @@ const LandingPageNotAuthenticated = () => {
                         </Anchor>
                     </Flex>
                         <Flex direction="column" justify="space-between" align="flex-start" style={{ marginTop: "50px" }}>
-                            <Text style={{ fontSize: "24px" }} >
+                            <Text style={{ fontSize: "24px" }} class={classes.title}>
                                 Links
                             </Text>
                             <Space h="sm" />
@@ -224,21 +224,19 @@ const LandingPageNotAuthenticated = () => {
                         <Space w="xl" />
                         <Space w="xl" />
                         <Flex direction="column" justify="space-between" align="flex-start" style={{float: "left" }} >
-                            <Text style={{ fontSize: "24px" }} >
-                                Subscribe
+                            <Text style={{ fontSize: "24px" }} class={classes.title}>
+                                Get Latest Updates!
                             </Text>
-                            <TextInput placeholder="Enter email" label="Email" size="md" value={email} onChange={(e) => setEmail(e.target.value)} />
+                            <TextInput placeholder="Enter email" size="md" value={email} onChange={(e) => setEmail(e.target.value)} />
                             <Space h="xs" />
-                            <Button type="submit" size="md" fullWidth onClick={handleSubscription}>
+                            <Button type="submit" size="sm" fullWidth onClick={handleSubscription}>
                                 Subscribe
                             </Button>
                         </Flex>
                     </Flex>
                 <Space h="xl" />
                 <Space h="xl" />
-                <Flex direction="row" justify="center" align="center" wrap="wrap" style={{ height: "45px", width: "100%", color: "white" }}>
-                    Reflecto Trend &copy; {" " + currentYear + " "} All Rights Reserved
-                </Flex>
+        </PageBackground>
         </>
     );
 }

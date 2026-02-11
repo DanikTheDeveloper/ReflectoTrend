@@ -75,11 +75,23 @@
 }
 
 .burger {
-	@media (max-width: 900px) {
-		display: none;
-	}
+    --burger-color: #EDE9FF; 
+}
 
-	@media (max-width: 600px) {
-		display: block;
-	}
+@media (max-width: 576px) {
+    .header {
+        font-size: 0.75rem;
+    }
+    .link {
+        font-size: 0.75rem;
+        --button-height: 18px;
+        --button-width: 12px;
+        --button-padding-x: 5px;
+        --button-fz: 5px;
+    	padding: rem(4px) rem(6px);
+    }
+    .logo {
+        padding: rem(2.5px) rem(7px) rem(2.5px) rem(7px);
+        margin: rem(5px) rem(2.5px) rem(5px) rem(15px);
+    }
 }

@@ -3,16 +3,17 @@ import PrivateHeader from "../../Home/Header/PrivateHeader.js";
 import Header from '../../Home/Header/Header.js';
 import { Container, Flex, Text, Title } from '@mantine/core';
 import { useSelector } from 'react-redux';
+import PageBackground from "../../Common/Background";
 
 const About = () => {
     const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
 
     return (
         <>
+        <PageBackground>
             {isAuthenticated ? <PrivateHeader /> : <Header />}
         <div style={{
             minHeight: '90vh',
-            background: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)',
             fontFamily: "'Courier New', monospace",
             color: '#ffffff',
             padding: '80px 20px'
@@ -67,21 +68,9 @@ const About = () => {
                     </Text>
                 </Flex>
                 
-                <Flex justify="center">
-                    <Text 
-                        size="3.2rem" 
-                        style={{
-                            color: '#4ecdc4',
-                            fontWeight: 'bold',
-                            textShadow: '0 0 20px rgba(78, 205, 196, 0.5)',
-                            fontFamily: 'Impact, sans-serif'
-                        }}
-                    >
-                        We already have 500K+ signups for this app!
-                    </Text>
-                </Flex>
             </Container>
         </div>
+        </PageBackground>
         </>
     );
 };

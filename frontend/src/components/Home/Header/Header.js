@@ -13,7 +13,6 @@ import {
     Center,
     ActionIcon,
     Space,
-    useMantineColorScheme,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
@@ -35,12 +34,8 @@ function Header(props = {image})  {
     const [userMenuOpened, setUserMenuOpened ] = useDisclosure(false);
     const navigate = useNavigate();
 
-    let image = "./images/reflecto_dark.svg";
+    let image = "./images/reflecto.svg";
     image = props.image !== undefined ? props.image : image;
-
-    const toggleColorScheme = () => {
-        setColorScheme(colorScheme === "dark" ? "light" : "dark");
-    }
 
     const handleClick = (e, link) => {
         e.preventDefault();
@@ -109,7 +104,7 @@ function Header(props = {image})  {
                 </Button>
             </div>
             <div className={classes.inner}>
-                <Burger opened={opened} onClick={toggle} size="sm" hiddenFrom="sm" />
+                <Burger opened={opened} onClick={toggle} size="sm" hiddenFrom="sm" className={classes.burger}/>
                 <Drawer opened={opened} onClose={close}>
                     <div className={classes.drawer}>
 				    <NavLink href="/docs" active variant="filled" className={classes.drawerLink} label={<span className={classes.drawerLinkLabel}>Learn More</span>} />
