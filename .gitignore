@@ -9,6 +9,8 @@ node_modules/
 ./tmp/build-errors.log
 backend/tmp
 backend/keys
+backend/main
+backend/reflecto.trend
 backend/to_exe
 backend/bin/air
 backend/bin/tmp

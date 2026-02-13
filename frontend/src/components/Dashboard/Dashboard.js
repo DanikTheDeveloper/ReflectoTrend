@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Chart from "./Chart/Chart";
 import SidePanel from "./SidePanel/SidePanel";
 import AppShell from "../General/AppShell";
-import { Grid, Button } from "@mantine/core";
+import { Grid, Button, Box } from "@mantine/core";
 import { Link } from 'react-router-dom';
 import { useDisclosure } from '@mantine/hooks';
 
@@ -84,44 +84,41 @@ const Dashboard = () => {
 
     return (
         <AppShell
-            selectedIndex={0}
-            component={
-                <Grid 
-                    gutter="xs" 
-                    style={{
-                        height: '100vh',
-                        margin: 0,
-                        background: 'linear-gradient(145deg, #1a2238 0%, #2c1a6a 45%, #1a2f5a 100%)',
-                    }}
-                >
-                    <Grid.Col 
-                        span={opened ? 3 : "auto"} 
-                        style={{ height: '100vh', padding: 0 }}
-                    >
-                        <SidePanel
-                            opened={opened}
-                            toggle={toggle}
-                            setTab={setTab}
-                            selectedTab={selectedTab}
-                            searchStocks={searchStocks}
-                            selectedStock={selectedStock}
-                            setStock={setStock}
-                            allList={allList}
-                            cryptoList={cryptoList}
-                            isLoading={isLoading}
-                        />
-                    </Grid.Col>
-                    <Grid.Col 
-                        span={opened ? 9 : "auto"} 
-                        style={{ height: '100vh', overflow: 'hidden' }}
-                    >
-                        <div className={classes.mainPanel} style={{ height: '100%', overflow: 'auto' }}>
-                            <Chart stock={selectedStock} />
-                        </div>
-                    </Grid.Col>
-                </Grid>
-            }
-        />
+    selectedIndex={0}
+    component={
+        <Box style={{ 
+            display: 'flex', 
+            height: '100vh',
+            background: 'linear-gradient(145deg, #1a2238 0%, #2c1a6a 45%, #1a2f5a 100%)',
+            overflow: 'hidden'
+        }}>
+            <SidePanel
+                opened={opened}
+                toggle={toggle}
+                setTab={setTab}
+                selectedTab={selectedTab}
+                searchStocks={searchStocks}
+                selectedStock={selectedStock}
+                setStock={setStock}
+                allList={allList}
+                cryptoList={cryptoList}
+                isLoading={isLoading}
+            />
+            
+            <Box style={{ 
+                flex: 1, 
+                width: '100%',
+                height: '100vh',
+                overflow: 'auto',
+                padding: '1rem',
+            }}>
+                    <div className={classes.mainPanel}>
+                        <Chart stock={selectedStock} />
+                    </div>
+            </Box>
+        </Box>
+    }
+/>
     );
 };
 

@@ -7,14 +7,18 @@ import (
 	"fmt"
 	"os"
 	"time"
-    "net/http"
+	"net/http"
 
-	_ "github.com/mattn/go-sqlite3" // SQLite driver
+	_ "github.com/mattn/go-sqlite3"
 )
 
-// FetchFinanceData fetches and saves financial data in a database
+const (
+	weekInHours = time.Hour * 24 * 7
+	dataDir     = "./data/"
+)
+
 func FetchFinanceData(code string, interval string) ([]Share, error) {
-	dbName := "./data/" + code + "_" + interval + ".db"
+	dbName := dataDir + code + "_" + interval + ".db"
 	db, err := sql.Open("sqlite3", dbName)
 	if err != nil {
 		return nil, fmt.Errorf("error opening database: %v", err)
@@ -51,45 +55,49 @@ func FetchFinanceData(code string, interval string) ([]Share, error) {
 }
 
 func FetchFinanceDataByDate(code string, interval string, startDate CustomTime, endDate CustomTime) ([]Share, error) {
-    fmt.Printf("Fetching data for %s from %s to %s\n", code, startDate.ToTime().Format(ctLayout), endDate.ToTime().Format(ctLayout))
-    dbName := "data/" + code + "_" + interval + ".db"
-    db, err := sql.Open("sqlite3", dbName)
-    if err != nil {
-        return nil, fmt.Errorf("error opening database: %v", err)
-    }
-    defer db.Close()
+	if startDate.ToTime().After(endDate.ToTime()) {
+		return nil, fmt.Errorf("start date must be before end date")
+	}
 
-    rows, err := db.Query("SELECT date, open, high, low, close FROM shares where date >= ? and date <= ?", startDate.ToTime().Format(ctLayout), endDate.ToTime().Format(ctLayout))
-    if err != nil {
-           return nil, fmt.Errorf("error querying data: %v", err)
-    }
-    defer rows.Close()
+	dbName := dataDir + code + "_" + interval + ".db"
 
-    var shares []Share
-       for rows.Next() {
-        var share Share
-               var dateStr string
-               if err := rows.Scan(&dateStr, &share.Data.Open, &share.Data.Low ,&share.Data.High, &share.Data.Close); err != nil {
-                       return nil, fmt.Errorf("error scanning row: %v", err)
-               }
-               share.Date, err = time.Parse(ctLayout, dateStr)
-               if err != nil {
-                       return nil, fmt.Errorf("error parsing date: %v", err)
-               }
-               shares = append(shares, share)
-    }
-    return shares, nil
+	print("in dbName", dbName)
+	db, err := sql.Open("sqlite3", dbName)
+	if err != nil {
+		return nil, fmt.Errorf("error opening database: %v", err)
+	}
+	defer db.Close()
+
+	rows, err := db.Query("SELECT date, open, high, low, close FROM shares WHERE date >= ? AND date <= ?", 
+		startDate.ToTime().Format(ctLayout), endDate.ToTime().Format(ctLayout))
+	if err != nil {
+		return nil, fmt.Errorf("error querying data: %v", err)
+	}
+	defer rows.Close()
+
+	var shares []Share
+	for rows.Next() {
+		var share Share
+		var dateStr string
+		if err := rows.Scan(&dateStr, &share.Data.Open, &share.Data.High, &share.Data.Low, &share.Data.Close); err != nil {
+			return nil, fmt.Errorf("error scanning row: %v", err)
+		}
+		share.Date, err = time.Parse(ctLayout, dateStr)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing date: %v", err)
+		}
+		shares = append(shares, share)
+	}
+	return shares, nil
 }
 
 func checkDatabaseInitialization(db *sql.DB, code string) (time.Time, bool, error) {
-	// Check if table exists
 	var tableName string
 	err := db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='shares'").Scan(&tableName)
 	if err != nil && err != sql.ErrNoRows {
 		return time.Time{}, false, fmt.Errorf("error checking if table exists: %v", err)
 	}
 
-	// If table does not exist, initialize database
 	if tableName == "" {
 		start, err := readStartDateFromJSON(code)
 		if err != nil {
@@ -102,24 +110,20 @@ func checkDatabaseInitialization(db *sql.DB, code string) (time.Time, bool, erro
 }
 
 func fetchDataAndInitializeDB(db *sql.DB, code string, start, end time.Time, interval string) ([]Share, error) {
-	// Create table
-	_, err := db.Exec("CREATE TABLE shares (id INTEGER PRIMARY KEY, date TEXT, open REAL, high REAL, low REAL, close REAL)")
+	_, err := db.Exec("CREATE TABLE shares (id INTEGER PRIMARY KEY, date TEXT UNIQUE, open REAL, high REAL, low REAL, close REAL)")
 	if err != nil {
 		return nil, fmt.Errorf("error creating table: %v", err)
 	}
 
-	// Fetch and insert data
 	return fetchAndInsertData(db, code, start, end, interval)
 }
 
 func fetchAndAppendNewData(db *sql.DB, code string, start, end time.Time, interval string, oldShares []Share) ([]Share, error) {
-	// Fetch new data
 	newShares, err := fetchAndInsertData(db, code, start, end, interval)
 	if err != nil {
 		return nil, err
 	}
 
-	// Append new data to old data
 	return append(oldShares, newShares...), nil
 }
 
@@ -147,25 +151,29 @@ func loadSharesFromDatabase(db *sql.DB) ([]Share, error) {
 }
 
 func fetchAndInsertData(db *sql.DB, code string, start, end time.Time, interval string) ([]Share, error) {
-    shares, err := ProbeData(code, start, end, interval)
-    if err != nil {
-        return nil, err
-    }
+	if start.After(end) {
+		return nil, fmt.Errorf("start time must be before end time")
+	}
 
-    stmt, err := db.Prepare("INSERT INTO shares (date, open, high, low, close) VALUES (?, ?, ?, ?, ?)")
-    if err != nil {
-        return nil, fmt.Errorf("error preparing insert statement: %v", err)
-    }
-    defer stmt.Close()
+	shares, err := ProbeData(code, start, end, interval)
+	if err != nil {
+		return nil, err
+	}
 
-    for _, share := range shares {
-        formattedDate := share.Date.Format(ctLayout) // Format the date according to ctLayout
-        _, err := stmt.Exec(formattedDate, share.Data.Open, share.Data.High, share.Data.Low, share.Data.Close)
-        if err != nil {
-            return nil, fmt.Errorf("error inserting share: %v", err)
-        }
-    }
-    return shares, nil
+	stmt, err := db.Prepare("INSERT OR IGNORE INTO shares (date, open, high, low, close) VALUES (?, ?, ?, ?, ?)")
+	if err != nil {
+		return nil, fmt.Errorf("error preparing insert statement: %v", err)
+	}
+	defer stmt.Close()
+
+	for _, share := range shares {
+		formattedDate := share.Date.Format(ctLayout)
+		_, err := stmt.Exec(formattedDate, share.Data.Open, share.Data.High, share.Data.Low, share.Data.Close)
+		if err != nil {
+			return nil, fmt.Errorf("error inserting share: %v", err)
+		}
+	}
+	return shares, nil
 }
 
 func readStartDateFromJSON(code string) (time.Time, error) {
@@ -195,11 +203,8 @@ func readStartDateFromJSON(code string) (time.Time, error) {
 func ProbeData(code string, start, end time.Time, interval string) ([]Share, error) {
 	var allShares []Share
 
-	// Adjustable step size, initially set to 1 week
-	stepSize := time.Hour * 24 * 7
-
-	for currentStart := start; currentStart.Before(end); currentStart = currentStart.Add(stepSize) {
-		currentEnd := currentStart.Add(stepSize)
+	for currentStart := start; currentStart.Before(end); currentStart = currentStart.Add(weekInHours) {
+		currentEnd := currentStart.Add(weekInHours)
 		if currentEnd.After(end) {
 			currentEnd = end
 		}
@@ -216,74 +221,72 @@ func ProbeData(code string, start, end time.Time, interval string) ([]Share, err
 }
 
 func fetchSharesForInterval(code string, start, end time.Time, interval string) ([]Share, error) {
-    var shares []Share
-    granularity := determineGranularity(interval)
+	var shares []Share
+	granularity := determineGranularity(interval)
 
-    // Ensure granularity is within expected values
-    if granularity == "" {
-        return nil, fmt.Errorf("invalid interval for granularity determination: %s", interval)
-    }
+	if granularity == "" {
+		return nil, fmt.Errorf("invalid interval for granularity determination: %s", interval)
+	}
 
-    loc, _ := time.LoadLocation("America/Vancouver")
-    start = start.In(loc)
-    end = end.In(loc)
+	loc, _ := time.LoadLocation("America/Vancouver")
+	start = start.In(loc)
+	end = end.In(loc)
 
-    url := fmt.Sprintf("https://api.pro.coinbase.com/products/%s/candles?start=%s&end=%s&granularity=%s",
-        code, start.Format(time.RFC3339), end.Format(time.RFC3339), granularity)
+	url := fmt.Sprintf("https://api.pro.coinbase.com/products/%s/candles?start=%s&end=%s&granularity=%s",
+		code, start.Format(time.RFC3339), end.Format(time.RFC3339), granularity)
 
-    resp, err := http.Get(url)
-    if err != nil {
-        return nil, fmt.Errorf("error fetching Coinbase data: %v", err)
-    }
-    defer resp.Body.Close()
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching Coinbase data: %v", err)
+	}
+	defer resp.Body.Close()
 
-    // Check for non-200 status code
-    if resp.StatusCode != http.StatusOK {
-        return nil, fmt.Errorf("received non-200 status code: %d", resp.StatusCode)
-    }
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("received non-200 status code: %d", resp.StatusCode)
+	}
 
-    var candles [][]float64
-    err = json.NewDecoder(resp.Body).Decode(&candles)
-    if err != nil {
-        return nil, fmt.Errorf("error unmarshaling response: %v", err)
-    }
+	var candles [][]float64
+	err = json.NewDecoder(resp.Body).Decode(&candles)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshaling response: %v", err)
+	}
 
-    for _, c := range candles {
-        if len(c) < 5 { // Ensure there are enough elements in the slice to prevent index out of range errors
-            return nil, fmt.Errorf("unexpected candle data format: %+v", c)
-        }
-        share := Share{
-            Date: time.Unix(int64(c[0]), 0),
-            Data: OHLC{
-                Open:  c[3],
-                High:  c[2],
-                Low:   c[1],
-                Close: c[4],
-            },
-        }
-        shares = append(shares, share)
-    }
+	for _, c := range candles {
+		if len(c) < 5 {
+			return nil, fmt.Errorf("unexpected candle data format: %+v", c)
+		}
+		share := Share{
+			Date: time.Unix(int64(c[0]), 0),
+			Data: OHLC{
+				Open:  c[3],
+				High:  c[2],
+				Low:   c[1],
+				Close: c[4],
+			},
+		}
+		shares = append(shares, share)
+	}
 
-    return shares, nil
+	return shares, nil
 }
 
 func determineGranularity(interval string) string {
-    switch interval {
-    case "1m":
-        return "60"
-    case "5m":
-        return "300"
-    case "15m":
-        return "900"
-    case "1h":
-        return "3600"
-    case "6h":
-        return "21600"
-    case "1d":
-        return "86400"
-    default:
-        return "" // Return an empty string to indicate an invalid or unsupported interval
-    }
+	switch interval {
+	case "1m":
+		return "60"
+	case "5m":
+		return "300"
+	case "15m":
+		return "900"
+	case "1h":
+		return "3600"
+	case "6h":
+		return "21600"
+	case "1d":
+		return "86400"
+	default:
+		return ""
+	}
 }
 
 func LoadSharesFromDatabase(dbName string) ([]Share, error) {
@@ -293,7 +296,7 @@ func LoadSharesFromDatabase(dbName string) ([]Share, error) {
 	}
 	defer db.Close()
 
-	rows, err := db.Query("SELECT * FROM shares")
+	rows, err := db.Query("SELECT date, open, high, low, close FROM shares")
 	if err != nil {
 		return nil, fmt.Errorf("error querying data: %v", err)
 	}
@@ -302,9 +305,13 @@ func LoadSharesFromDatabase(dbName string) ([]Share, error) {
 	var shares []Share
 	for rows.Next() {
 		var share Share
-		// Assuming Share struct has fields corresponding to the database columns
-		if err := rows.Scan(/* fields */); err != nil {
+		var dateStr string
+		if err := rows.Scan(&dateStr, &share.Data.Open, &share.Data.High, &share.Data.Low, &share.Data.Close); err != nil {
 			return nil, fmt.Errorf("error scanning row: %v", err)
+		}
+		share.Date, err = time.Parse(ctLayout, dateStr)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing date: %v", err)
 		}
 		shares = append(shares, share)
 	}
