@@ -4,8 +4,9 @@
     flex-direction: row;
     justify-content: space-between;
     height: rem(50px);
-    border-bottom: rem(1px) solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+    border-bottom: rem(1px) solid --mantine-color-dark-4;
     position: sticky;
+    background: linear-gradient(145deg, #12082e 0%, #1c1050 45%, #0e1a3a 100%);
 }
 
 .drawer {
@@ -29,7 +30,7 @@
     height: rem(1px);
     top: 50%;
     transform: translateY(-50%);
-    border-top: rem(1px) solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+    border-top: rem(1px) solid --mantine-color-dark-4;
     z-index: 1;
 }
 
@@ -47,10 +48,10 @@
     flex-direction: row;
     justify-content: flex-start;
     width: rem(100vw);
-    color: light-dark(var(--secondary-color), var(--primary-color));
+    color: primary-color;
 }
 .drawerButton:hover {
-    background-color: light-dark(var(--accent-color), var(--mantine-color-dark-6));
+    background-color: --mantine-color-light-6;
 }
 .drawerLogoutButton {
     display: flex;
@@ -58,10 +59,10 @@
     flex-direction: row;
     justify-content: flex-start;
     width: rem(100vw);
-    color: light-dark(var(--warning-color), var(--warning-color));
+    color: --warning-color;
 }
 .drawerLogoutButton:hover {
-    background-color: light-dark(var(--accent-color), var(--mantine-color-dark-6));
+    background-color: --mantine-color-light-6;
 }
 
 .logoLinks {
@@ -73,11 +74,10 @@
 }
 
 .logo {
-    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-0));
 	height: rem(32px);
 	padding: rem(5px) rem(14px) rem(5px) rem(14px);
     margin: rem(10px) rem(5px) rem(10px) rem(30px);
-	border-right: rem(1px) solid light-dark(var(--secondary-color), var(--mantine-color-gray-4));
+	border-right: rem(1px) solid --mantine-color-gray-4;
 }
 
 
@@ -95,10 +95,10 @@
     line-height: 1;
     padding: rem(8px) rem(12px);
     border-radius: var(--mantine-radius-sm);
-    color: light-dark(var(--secondary-color), var(--secondary-color));
+    color: --secondary-color;
 
     @mixin hover {
-        background-color: light-dark(var(--secondary-color), var(--mantine-color-dark-6));
+        background-color: --mantine-color-dark-6;
     }
 }
 
@@ -113,7 +113,7 @@
     transition: background-color 100ms ease;
 
     &:hover {
-        background-color: light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-6));
+        background-color: --mantine-color-primary-6;
     }
 
     @media (max-width: 600px) {
@@ -151,3 +151,11 @@
     padding: 5px;
     margin-right: 10px;
 }
+
+.navlink {
+    color: #EDE9FF; 
+}
+.navlink:hover {
+    color: #FCE073;
+}
+

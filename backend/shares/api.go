@@ -11,9 +11,52 @@ import (
 	"reflecto.trend/handler"
 	"strings"
 	"time"
+	"path/filepath"
 
 	"github.com/julienschmidt/httprouter"
 )
+
+func HandleTrends(env *handler.Env) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Cache-Control", "public, max-age=300")
+
+		dir, err := os.Getwd()
+		if err != nil {
+			http.Error(w, `{"error": "Server error"}`, http.StatusInternalServerError)
+			return
+		}
+
+		filePath := filepath.Join(dir, "coingecko/trending-coins.json")
+
+		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("[]"))
+			return
+		}
+
+		data, err := os.ReadFile(filePath)
+		if err != nil {
+			http.Error(w, `{"error": "Failed to read trending data"}`, http.StatusInternalServerError)
+			return
+		}
+
+		if len(data) == 0 {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("[]"))
+			return
+		}
+
+		if !json.Valid(data) {
+			http.Error(w, `{"error": "Invalid JSON data"}`, http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		w.Write(data)
+	}
+}
 
 func HandleAnalyse(env *handler.Env) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

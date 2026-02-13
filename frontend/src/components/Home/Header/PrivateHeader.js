@@ -13,7 +13,6 @@ import {
     Drawer,
     ActionIcon,
     Space,
-    useMantineColorScheme,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
@@ -34,7 +33,6 @@ function PrivateHeader(props = {image, selectedIndex })  {
     }
     const [opened, {open, close} ] = useDisclosure(false);
     const navigate = useNavigate();
-    const { colorScheme, setColorScheme } = useMantineColorScheme();
     const [ index, setIndex] = React.useState(props.selectedIndex);
 
     const handleIndex = (value) => {
@@ -54,11 +52,7 @@ function PrivateHeader(props = {image, selectedIndex })  {
     }
 
 
-    const toggleColorScheme = () => {
-        setColorScheme(colorScheme === "dark" ? "light" : "dark");
-    }
-
-    let image = colorScheme === "dark" ? "./images/reflecto.svg" : "./images/reflecto.svg";
+    let image = "./images/reflecto.svg";
     image = props.image !== undefined ? props.image : image;
     const toggle = () => (opened ? close() : open());
 
@@ -84,7 +78,6 @@ function PrivateHeader(props = {image, selectedIndex })  {
                         </Text>
                         }
                         </Menu.Item>
-                        <Menu.Item color="var(--cyan-color)" leftSection={<IconFileDollar size="1.5rem" stroke={1} />} onClick={() => navigate('/billing')}> <Text size="md"> Billing </Text> </Menu.Item>
                         <Menu.Divider />
                         <Menu.Item color="var(--warning-color)" leftSection={<IconLogout size="1.5rem" stroke={1.5} />} onClick={() => navigate('/signout')}><Text size="lg" > Logout </Text> </Menu.Item>
                         </Menu.Dropdown>
@@ -104,27 +97,6 @@ function PrivateHeader(props = {image, selectedIndex })  {
                             <IconLogout size="1.5rem" stroke={1.5} />
                         </UnstyledButton>
                         <Space h="md" className={classes.line} />
-                                <UnstyledButton
-                                    variant="outline"
-                                    color="gray"
-                                    size="md"
-                                    className={classes.drawerToggleButton}
-                                    onClick={() => toggleColorScheme()}
-                                >
-                                    { colorScheme === "dark" ?
-                                        <>
-                                            <Text size="lg" > Light Mode {" "}</Text>
-                                            <Space w="xs" />
-                                            <IconSun size="1.5rem" stroke={1.5} />
-                                        </>
-                                        :
-                                        <>
-                                            <Text size="lg" > Dark Mode </Text>
-                                            <Space w="xs" />
-                                            <IconMoon size="1.5rem" stroke={1.5} />
-                                        </>
-                                    }
-                                </UnstyledButton>
                     </div>
                 </Drawer>
                 <div className={classes.navbar}>
@@ -133,6 +105,7 @@ function PrivateHeader(props = {image, selectedIndex })  {
                             active
                             variant={index === 1 ? "light" : "subtle"}
                             onClick={() => handleIndex(1)}
+                            className={classes.navlink}
                         />
                         <Space w="md" />
                         <NavLink
@@ -140,6 +113,7 @@ function PrivateHeader(props = {image, selectedIndex })  {
                             active
                             variant={index === 0 ? "light" : "subtle"}
                             onClick={() => handleIndex(0)}
+                            className={classes.navlink}
                         />
                         <Space w="md" />
                         <NavLink
@@ -147,6 +121,7 @@ function PrivateHeader(props = {image, selectedIndex })  {
                             active
                             variant={index === 2 ? "light" : "subtle"}
                             onClick={() => handleIndex(2)}
+                            className={classes.navlink}
                         />
                         <Space w="md" />
                         <NavLink
@@ -154,30 +129,9 @@ function PrivateHeader(props = {image, selectedIndex })  {
                             active
                             variant={index === 3 ? "light" : "subtle"}
                             onClick={() => handleIndex(3)}
+                            className={classes.navlink}
                         />
                 </div>
-                <Group gap={10} visibleFrom="sm">
-                {
-                    colorScheme === "dark" ?
-                        <ActionIcon
-                            variant="outline"
-                            color="gray"
-                            size="md"
-                            onClick={() => toggleColorScheme()}
-                        >
-                            <IconSun size="1.5rem" stroke={1.5} />
-                        </ActionIcon>
-                        :
-                        <ActionIcon
-                            variant="outline"
-                            color="gray"
-                            size="md"
-                            onClick={() => toggleColorScheme()}
-                        >
-                            <IconMoon size="1.5rem" stroke={1.5} />
-                        </ActionIcon>
-                }
-                </Group>
             </div>
         </header>
     );

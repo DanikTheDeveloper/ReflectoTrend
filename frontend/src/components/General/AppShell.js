@@ -15,12 +15,6 @@ const MyAppShell = (props={component, selectedIndex}) => {
           <PrivateHeader selectedIndex={props.selectedIndex}/>
       </AppShell.Header >
 
-      <AppShell.Navbar py="md" px={4}>
-        <UnstyledButton className={classes.control}>Home</UnstyledButton>
-        <UnstyledButton className={classes.control}>Blog</UnstyledButton>
-        <UnstyledButton className={classes.control}>Contacts</UnstyledButton>
-        <UnstyledButton className={classes.control}>Support</UnstyledButton>
-      </AppShell.Navbar>
 
       <AppShell.Main>
         {props.component}

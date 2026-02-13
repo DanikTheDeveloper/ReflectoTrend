@@ -1,4 +1,4 @@
-import { isNotDefined, isDefined } from "@react-financial-charts/core";
+import { isNotDefined, isDefined } from "@react-stockcharts3/core";
 
 export function saveInteractiveNode(chartId) {
 	return node => {

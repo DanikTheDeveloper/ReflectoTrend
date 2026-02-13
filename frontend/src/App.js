@@ -26,7 +26,7 @@ import Blog from "./components/Blog/Blog.js";
 import About from "./components/Home/Landing/About.js";
 import Team from "./components/Home/Landing/Team.js";
 import Terms from "./components/Home/Landing/Terms.js";
-import { getStockList } from "./store/StockSlice.js";
+import { getStockList } from "./store/StockSlice";
 import { loadUser, googleAuthCallback } from "./store/AuthSlice.js";
 import '@mantine/dates/styles.css';
 import {useSelector} from "react-redux";

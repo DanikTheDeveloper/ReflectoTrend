@@ -113,6 +113,9 @@ func registerRoutes(env *handler.Env) http.Handler {
 	r.Handler(http.MethodPost, "/auth/logout/", handler.Handler{Env: env, H: users.HandleLogout})
 
 	// Protected routes
+	r.GET("/auth/user", users.ValidateToken(env, users.HandleGetUser(env)))
+	r.Handler(http.MethodPost, "/auth/refresh/", handler.Handler{Env: env, H: users.HandleRefresh})
+	
 	r.GET("/api/getUserPricing", users.ValidateToken(env, users.GetUserPricingHandler(env)))
 	r.POST("/api/updateUserPricing", users.ValidateToken(env, users.UpdateUserPricingHandler(env)))
 	r.GET("/api/user", users.ValidateToken(env, users.GetCurrentUser(env)))
@@ -125,8 +128,7 @@ func registerRoutes(env *handler.Env) http.Handler {
 	r.POST("/api/createPaymentMethod", users.ValidateToken(env, users.HandleCreatePaymentMethod(env)))
 	r.POST("/api/generateSD", users.ValidateToken(env, shares.HandleGenerateSD(env)))
 	r.POST("/auth/authCheck", users.ValidateToken(env, users.HandleAuthorization(env)))
-	r.GET("/auth/user", users.ValidateToken(env, users.HandleGetUser(env)))
-	r.Handler(http.MethodPost, "/auth/refresh/", handler.Handler{Env: env, H: users.HandleRefresh})
+	r.GET("/api/trends", users.ValidateToken(env, shares.HandleTrends(env)))
 
 	r.Handler(http.MethodPost, "/api/initGoogleAuth", handler.OauthHandler{Env: env, OauthConf: myAuthConf, H: handler.WrapInitGoogleAuth(env, myAuthConf, users.InitGoogleAuth(env, myAuthConf))})
 	r.Handler(http.MethodPost, "/api/googleAuthCallback", handler.OauthHandler{Env: env, OauthConf: myAuthConf, H: handler.WrapGoogleAuthCallBack(env, myAuthConf, users.GoogleAuthCallBack(env, myAuthConf))})

@@ -1,5 +1,6 @@
 const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 const DotenvWebpackPlugin = require("dotenv-webpack");
+
 module.exports = {
   entry: './src/index.js',
   output: {
@@ -7,10 +8,23 @@ module.exports = {
     publicPath: '/',
     filename: 'main.js',
   },
+  resolve: {
+    extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
+  },
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'ts-loader',
+          options: {
+            transpileOnly: true,
+          }
+        }
+      },
+      {
+        test: /\.jsx?$/,
         exclude: /node_modules/,
         use: {
           loader: "babel-loader"
@@ -41,5 +55,3 @@ module.exports = {
     new DotenvWebpackPlugin(),
   ],
 }
-
-// use copy plugin to copy icons from cryptocurrency-icons to here.

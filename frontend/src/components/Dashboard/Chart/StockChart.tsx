@@ -1,30 +1,29 @@
-
 import React from "react";
 import PropTypes from "prop-types";
 import { format } from "d3-format";
 import { timeFormat } from "d3-time-format";
-import { ChartCanvas, Chart, ZoomButtons } from "react-stockcharts";
+import { ChartCanvas, Chart, ZoomButtons } from "@react-stockcharts/core";
 import {
 	BarSeries,
 	CandlestickSeries,
-} from "react-stockcharts/lib/series";
-import { XAxis, YAxis } from "react-stockcharts/lib/axes";
+} from "@react-stockcharts/series";
+import { XAxis, YAxis } from "@react-stockcharts/axes";
 import {
 	CrossHairCursor,
 	MouseCoordinateX,
 	MouseCoordinateY,
-} from "react-stockcharts/lib/coordinates";
-import { discontinuousTimeScaleProvider } from "react-stockcharts/lib/scale";
+} from "@react-stockcharts/coordinates";
+import { discontinuousTimeScaleProviderBuilder } from "@react-stockcharts/scales";
 import {
 	OHLCTooltip,
-} from "react-stockcharts/lib/tooltip";
-import { fitWidth } from "react-stockcharts/lib/helper";
-import { last, isDefined } from "react-stockcharts/lib/utils";
-import { Brush } from "react-stockcharts/lib/interactive";
-import {
-	saveInteractiveNode,
-} from "./InteractiveUtils";
-import { ema, sma, macd } from "react-stockcharts/lib/indicator";
+} from "@react-stockcharts/tooltip";
+import { fitWidth } from "@react-stockcharts/helper";
+import { last, isDefined } from "@react-stockcharts/utils";
+import { Brush } from "@react-stockcharts/interactive";
+// import {
+// 	saveInteractiveNode,
+// } from "./InteractiveUtils";
+import { ema, sma, macd } from "@react-stockcharts/indicator";
 
 
 const BRUSH_TYPE = "2D"; // Valid values = "2D", "1D"
@@ -80,7 +79,7 @@ class CandleStickChart extends React.Component {
             opacity: 1,
         };
         this.handleBrush1 = this.handleBrush1.bind(this);
-        this.saveInteractiveNode = saveInteractiveNode.bind(this);
+        //this.saveInteractiveNode = saveInteractiveNode.bind(this);
         const { data: initialData } = props;
 
 		const calculatedData = macdCalculator(smaVolume50(ema12(ema26(initialData))));
@@ -213,12 +212,6 @@ class CandleStickChart extends React.Component {
                         {...this.candlesAppearance}
                     />
 					<OHLCTooltip origin={[-40, 0]}/>
-                    <Brush
-						//ref={this.saveInteractiveNode(1)}
-						enabled={brushEnabled}
-						type={BRUSH_TYPE}
-						//onBrush={this.handleBrush1}
-                    />
 				</Chart>
 			</ChartCanvas>
 		);

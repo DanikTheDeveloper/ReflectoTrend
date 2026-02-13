@@ -86,8 +86,18 @@ const Dashboard = () => {
         <AppShell
             selectedIndex={0}
             component={
-                <Grid gutter="xs" overflow="hidden">
-                    <Grid.Col span={opened ? "content" : 1}>
+                <Grid 
+                    gutter="xs" 
+                    style={{
+                        height: '100vh',
+                        margin: 0,
+                        background: 'linear-gradient(145deg, #1a2238 0%, #2c1a6a 45%, #1a2f5a 100%)',
+                    }}
+                >
+                    <Grid.Col 
+                        span={opened ? 3 : "auto"} 
+                        style={{ height: '100vh', padding: 0 }}
+                    >
                         <SidePanel
                             opened={opened}
                             toggle={toggle}
@@ -101,8 +111,11 @@ const Dashboard = () => {
                             isLoading={isLoading}
                         />
                     </Grid.Col>
-                    <Grid.Col span={opened ? 9 : 11}>
-                        <div className={classes.mainPanel}>
+                    <Grid.Col 
+                        span={opened ? 9 : "auto"} 
+                        style={{ height: '100vh', overflow: 'hidden' }}
+                    >
+                        <div className={classes.mainPanel} style={{ height: '100%', overflow: 'auto' }}>
                             <Chart stock={selectedStock} />
                         </div>
                     </Grid.Col>
