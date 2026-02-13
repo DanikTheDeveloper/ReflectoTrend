@@ -6,25 +6,24 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"io"
 	"time"
     "net/http"
 
-	_ "github.com/mattn/go-sqlite3" // SQLite driver
+	_ "github.com/mattn/go-sqlite3" 
 )
 
 
 func StockUpdateAll() error {
-	currentDir, _ := os.Getwd()
-    fmt.Println(currentDir)
 	assets, err := readAndUnmarshalAssets("./shares/sd.json")
 	if err != nil {
 		return err
 	}
 
-	intervals := []string{"1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "8h", "12h", "1d", "3d", "1w", "1M"}
+	intervals := []string{"1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "8h", "12h", "1d", "3d", "1w"}
 	for _, asset := range assets {
 		for _, intervalStr := range intervals {
-			if err := StockUpdate(asset.Code, intervalStr); err != nil {
+			if _, err := StockUpdate(asset.Code, intervalStr); err != nil {
 				fmt.Printf("Error updating stock %s for interval %s: %v\n", asset.Name, intervalStr, err)
 				continue
 			}
@@ -34,29 +33,7 @@ func StockUpdateAll() error {
 	return nil
 }
 
-func StockUpdate(stockName string, interval string) error {
-	assets, err := readAndUnmarshalAssets("./shares/sd.json")
-	if err != nil {
-		fmt.Printf("Error loading assets: %v", err)
-		return err
-	}
-
-	_, err = validateAndFetchData(stockName, assets)
-	if err != nil {
-		fmt.Printf("Error validating and fetching data for stock %s: %v", stockName, err)
-		return err
-	}
-
-	_, err = UpdateData(stockName, interval)
-	if err != nil {
-		fmt.Printf("Error fetching finance data for %s from %s: %v", stockName, interval, err)
-		return err
-	}
-
-	return nil
-}
-
-func UpdateData(code string, interval string) ([]Share, error) {
+func StockUpdate(code string, interval string) ([]Share, error) {
 	dbName := "./data/" + code + "_" + interval + ".db"
 	db, err := sql.Open("sqlite3", dbName)
 	if err != nil {
@@ -69,6 +46,7 @@ func UpdateData(code string, interval string) ([]Share, error) {
 	if err != nil {
 		return nil, err
 	} else if !start.Before(end) {
+		fmt.Println("Could not find start date")
         return nil, errors.New("Could not find start date")
     }
 
@@ -169,37 +147,59 @@ func LoadSharesFromDb(db *sql.DB) ([]Share, error) {
 	return shares, nil
 }
 
-func FetchAndInsertData(db *sql.DB, code string, start, end time.Time, interval string) (error) {
-    stmt, err := db.Prepare("INSERT INTO shares (date, open, high, low, close) VALUES (?, ?, ?, ?, ?)")
-    if err != nil {
-        return fmt.Errorf("error preparing insert statement: %v", err)
-    }
-    defer stmt.Close()
-    fmt.Println(start, end)
+func FetchAndInsertData(db *sql.DB, code string, start, end time.Time, interval string) error {
+	if start.After(end) || start.Equal(end) {
+		return fmt.Errorf("start time must be before end time")
+	}
 
-    stepSize := calculateStepSize(interval)
-    for currentStart := start; currentStart.Before(end); currentStart = currentStart.Add(stepSize) {
-        currentEnd := currentStart.Add(stepSize)
-        if currentEnd.After(end) {
-            currentEnd = end
-        }
-        fmt.Println(currentStart)
-        fmt.Println(currentEnd)
+	stmt, err := db.Prepare("INSERT OR IGNORE INTO shares (date, open, high, low, close) VALUES (?, ?, ?, ?, ?)")
+	if err != nil {
+		return fmt.Errorf("error preparing insert statement: %v", err)
+	}
+	defer stmt.Close()
 
-        shares, err := FetchSharesForInterval(code, currentStart, currentEnd, interval)
-        if err != nil {
-            return err
-        }
-        for _, share := range shares {
-            formattedDate := share.Date.Format(ctLayout)
-            _, err := stmt.Exec(formattedDate, share.Data.Open, share.Data.High, share.Data.Low, share.Data.Close)
-            if err != nil {
-                return fmt.Errorf("error inserting share: %v", err)
-            }
-        }
-    }
-    return nil
+	granularity := determineGranularity(interval)
+	if granularity == "" {
+		return fmt.Errorf("invalid interval: %s", interval)
+	}
+
+	granularitySeconds, _ := time.ParseDuration(granularity + "s")
+	totalDuration := end.Sub(start)
+	totalDataPoints := int(totalDuration / granularitySeconds)
+	
+	maxDataPointsPerRequest := 300
+	numRequests := (totalDataPoints + maxDataPointsPerRequest - 1) / maxDataPointsPerRequest
+	
+	if numRequests == 0 {
+		numRequests = 1
+	}
+
+	stepSize := totalDuration / time.Duration(numRequests)
+
+	for currentStart := start; currentStart.Before(end); currentStart = currentStart.Add(stepSize) {
+		currentEnd := currentStart.Add(stepSize)
+		if currentEnd.After(end) {
+			currentEnd = end
+		}
+
+		shares, err := FetchSharesForInterval(code, currentStart, currentEnd, interval)
+		if err != nil {
+			return err
+		}
+		
+		for _, share := range shares {
+			formattedDate := share.Date.Format(ctLayout)
+			_, err := stmt.Exec(formattedDate, share.Data.Open, share.Data.High, share.Data.Low, share.Data.Close)
+			if err != nil {
+				return fmt.Errorf("error inserting share: %v", err)
+			}
+		}
+		
+		time.Sleep(100 * time.Millisecond)
+	}
+	return nil
 }
+
 
 func ReadStartDateFromJSON(code string) (time.Time, error) {
 	fileContent, err := os.ReadFile("shares/sd.json")
@@ -225,78 +225,101 @@ func ReadStartDateFromJSON(code string) (time.Time, error) {
 	return time.Time{}, errors.New("code not found")
 }
 
+
 func FetchSharesForInterval(code string, start, end time.Time, interval string) ([]Share, error) {
-    var shares []Share
-    granularity := determineGranularity(interval)
+	var shares []Share
+	granularity := determineGranularity(interval)
 
-    // Ensure granularity is within expected values
-    if granularity == "" {
-        return nil, fmt.Errorf("invalid interval for granularity determination: %s", interval)
-    }
+	if granularity == "" {
+		return nil, fmt.Errorf("invalid interval for granularity determination: %s", interval)
+	}
 
-    loc, _ := time.LoadLocation("America/Vancouver")
-    start = start.In(loc)
-    end = end.In(loc)
+	startUnix := start.Unix()
+	endUnix := end.Unix()
 
-    url := fmt.Sprintf("https://api.pro.coinbase.com/products/%s/candles?start=%s&end=%s&granularity=%s",
-        code, start.Format(time.RFC3339), end.Format(time.RFC3339), granularity)
+	url := fmt.Sprintf("https://api.exchange.coinbase.com/products/%s/candles?start=%d&end=%d&granularity=%s",
+		code, startUnix, endUnix, granularity)
 
-    fmt.Println(url)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating request: %v", err)
+	}
 
-    resp, err := http.Get(url)
-    if err != nil {
-        return nil, fmt.Errorf("error fetching Coinbase data: %v", err)
-    }
-    defer resp.Body.Close()
+	req.Header.Set("User-Agent", "Mozilla/5.0")
 
-    // Check for non-200 status code
-    if resp.StatusCode != http.StatusOK {
-        return nil, fmt.Errorf("received non-200 status code: %d", resp.StatusCode)
-    }
+	client := &http.Client{Timeout: 60 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching Coinbase data: %v", err)
+	}
+	defer resp.Body.Close()
 
-    var candles [][]float64
-    err = json.NewDecoder(resp.Body).Decode(&candles)
-    if err != nil {
-        return nil, fmt.Errorf("error unmarshaling response: %v", err)
-    }
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("received status code %d: %s", resp.StatusCode, string(bodyBytes))
+	}
 
-    for _, c := range candles {
-        if len(c) < 5 { // Ensure there are enough elements in the slice to prevent index out of range errors
-            return nil, fmt.Errorf("unexpected candle data format: %+v", c)
-        }
-        share := Share{
-            Date: time.Unix(int64(c[0]), 0),
-            Data: OHLC{
-                Open:  c[3],
-                High:  c[2],
-                Low:   c[1],
-                Close: c[4],
-            },
-        }
-        shares = append(shares, share)
-    }
+	var candles [][]float64
+	err = json.NewDecoder(resp.Body).Decode(&candles)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshaling response: %v", err)
+	}
 
-    return shares, nil
+	if len(candles) == 0 {
+		return nil, fmt.Errorf("no data returned from API")
+	}
+
+	for _, c := range candles {
+		if len(c) < 5 {
+			return nil, fmt.Errorf("unexpected candle data format: %+v", c)
+		}
+		share := Share{
+			Date: time.Unix(int64(c[0]), 0),
+			Data: OHLC{
+				Open:  c[3],
+				High:  c[2],
+				Low:   c[1],
+				Close: c[4],
+			},
+		}
+		shares = append(shares, share)
+	}
+
+	return shares, nil
 }
 
-
 func calculateStepSize(interval string) time.Duration {
-    switch interval {
-    case "1m":
-        return time.Hour * 5;
-    case "5m":
-        return time.Hour * 25;
-    case "15m":
-        return time.Hour * 75;
-    case "1h":
-        return time.Hour * 300;
-    case "6h":
-        return time.Hour * 300 * 6;
-    case "1d":
-        return time.Hour * 300 * 24;
-    default:
-        return time.Hour * 4;
-    }
-
+	switch interval {
+	case "1m":
+		return time.Hour * 6
+	case "3m":
+		return time.Hour * 18
+	case "5m":
+		return time.Hour * 30
+	case "15m":
+		return time.Hour * 90
+	case "30m":
+		return time.Hour * 180
+	case "1h":
+		return time.Hour * 300
+	case "2h":
+		return time.Hour * 24 * 7
+	case "4h":
+		return time.Hour * 24 * 14
+	case "6h":
+		return time.Hour * 24 * 21
+	case "8h":
+		return time.Hour * 24 * 28
+	case "12h":
+		return time.Hour * 24 * 42
+	case "1d":
+		return time.Hour * 24 * 100
+	case "3d":
+		return time.Hour * 24 * 300
+	case "1w":
+		return time.Hour * 24 * 365
+	default:
+		return time.Hour * 24 * 7
+	}
 }
 
