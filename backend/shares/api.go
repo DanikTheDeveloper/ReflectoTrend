@@ -112,6 +112,8 @@ func HandleAnalyse(env *handler.Env) httprouter.Handle {
 			return
 		}
 
+		fmt.Println("found data for shares")
+
 		targetPattern := prepareTargetPattern(apiReq, shares)
 
 		similarSlices, err := FindSimilarPricePatterns(targetPattern, shares, apiReq.MinimumSimilarityRate)
@@ -120,6 +122,7 @@ func HandleAnalyse(env *handler.Env) httprouter.Handle {
 			http.Error(w, "Server error during analysis", http.StatusInternalServerError)
 			return
 		}
+
 
 		log.Println("Number of shares fetched:", len(shares))
 		log.Println("Number of similar slices:", len(similarSlices))

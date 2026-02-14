@@ -134,7 +134,6 @@ const Chart: React.FC<ChartProps> = ({ stock }) => {
       startIdx: 3,
       endIdx: seriesData.length,
     });
-    console.log('Series data loaded:', seriesData);
   }, [seriesData]);
 
   React.useMemo(() => {
@@ -150,7 +149,7 @@ const Chart: React.FC<ChartProps> = ({ stock }) => {
     )
       .unwrap()
       .then((data: StockAPIResponse) => {
-        const parsedData = [];// data.share.map(parseStockData(parseStockDate));
+        const parsedData = data.share.map(parseStockData(parseStockDate));
         setSeriesData(parsedData);
         setLoading(false);
       })
@@ -214,7 +213,7 @@ const Chart: React.FC<ChartProps> = ({ stock }) => {
   return (
     <div>
       <Box pos="relative">
-        <Title order={2}>{stock.label}</Title>
+        <Title order={2} className={classes.title}>{stock.label}</Title>
         <Space h="lg" />
         
         <div className={classes.intervalGroup}>
@@ -234,7 +233,7 @@ const Chart: React.FC<ChartProps> = ({ stock }) => {
         
         {!isLoading ? (
           <Grid gutter="xs">
-            <Grid.Col span={11} className={classes.chart}>
+            <Grid.Col span={9} className={classes.chart}>
               <CandleStickChart
                 isLoading={isLoading}
                 type="hybrid"
@@ -260,15 +259,15 @@ const Chart: React.FC<ChartProps> = ({ stock }) => {
                 />
               </div>
             </Grid.Col>
+
+            <Grid.Col span={2}>
+              <AnalyseForm analyseSlice={analyseSlice} />
+            </Grid.Col>
           </Grid>
         ) : (
           <Skeleton height={650} mt={6} width={1500} radius="lg" />
         )}
       </Box>
-      
-      <Space h="lg" />
-      
-      <AnalyseForm analyseSlice={analyseSlice} />
     </div>
   );
 };

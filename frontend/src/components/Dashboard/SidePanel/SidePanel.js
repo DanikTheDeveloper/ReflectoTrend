@@ -1,9 +1,40 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink, TextInput, Title, Text, Tabs, ThemeIcon, Stack, Box, ActionIcon } from '@mantine/core';
-import { IconSearch, IconStar, IconList, IconArrowBadgeRight, IconArrowBadgeLeft } from "@tabler/icons-react";
+import { IconSearch, IconStar, IconStarFilled, IconList, IconArrowBadgeRight, IconArrowBadgeLeft } from "@tabler/icons-react";
 import classes from "./SidePanel.module.css";
 
 const SidePanel = (props) => {
+    const [favourites, setFavourites] = useState([]);
+
+    useEffect(() => {
+        const saved = localStorage.getItem('favouriteStocks');
+        if (saved) {
+            try {
+                setFavourites(JSON.parse(saved));
+            } catch (e) {
+                setFavourites([]);
+            }
+        }
+    }, []);
+
+    const toggleFavourite = (item) => {
+        const isFavourite = favourites.some(fav => fav.value === item.value);
+        let newFavourites;
+        
+        if (isFavourite) {
+            newFavourites = favourites.filter(fav => fav.value !== item.value);
+        } else {
+            newFavourites = [...favourites, item];
+        }
+        
+        setFavourites(newFavourites);
+        localStorage.setItem('favouriteStocks', JSON.stringify(newFavourites));
+    };
+
+    const isFavourite = (item) => {
+        return favourites.some(fav => fav.value === item.value);
+    };
+
     return (
         <Box 
             style={{ 
@@ -36,8 +67,28 @@ const SidePanel = (props) => {
                             style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
                         >
                             <Tabs.List px="md" style={{ flexShrink: 0 }}>
-                                <Tabs.Tab value="all" leftSection={<IconList size={16} />}>All</Tabs.Tab>
-                                <Tabs.Tab value="crypto" leftSection={<IconList size={16} />}>Favourites</Tabs.Tab>
+                                <Tabs.Tab 
+                                    value="all" 
+                                    leftSection={<IconList size={16} />}
+                                    style={{
+                                        transition: 'background-color 0.2s'
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                >
+                                    All
+                                </Tabs.Tab>
+                                <Tabs.Tab 
+                                    value="fav" 
+                                    leftSection={<IconStarFilled size={16} />}
+                                    style={{
+                                        transition: 'background-color 0.2s'
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                >
+                                    Favourites
+                                </Tabs.Tab>
                             </Tabs.List>
 
                             <Box style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
@@ -53,35 +104,25 @@ const SidePanel = (props) => {
                                                     variant={props.selectedStock?.value === item.value ? "light" : "subtle"}
                                                     leftSection={
                                                         <ThemeIcon size="sm" variant="light" radius="xl">
-                                                            {item.label[0]}
+                                                            <img src={"cryptoIcons/" + item.icon} alt={item.label[0]} />
                                                         </ThemeIcon>
                                                     }
-                                                    rightSection={<IconArrowBadgeRight size={16} />}
                                                     onClick={() => props.setStock(item)}
-                                                    styles={{ root: { borderRadius: '8px' } }}
-                                                />
-                                            ))
-                                        )}
-                                    </Stack>
-                                </Tabs.Panel>
-
-                                <Tabs.Panel value="crypto" pt="xs">
-                                    <Stack gap="xs" px="md" pb="md">
-                                        {props.isLoading ? (
-                                            <Text size="sm" c="dimmed">Loading...</Text>
-                                        ) : (
-                                            props.cryptoList?.map((item) => (
-                                                <NavLink
-                                                    key={item.value}
-                                                    label={item.label}
-                                                    variant={props.selectedStock?.value === item.value ? "light" : "subtle"}
-                                                    leftSection={
-                                                        <ThemeIcon size="sm" variant="light" radius="xl">
-                                                            {item.label[0]}
-                                                        </ThemeIcon>
+                                                    rightSection={
+                                                        <ActionIcon
+                                                            size="sm"
+                                                            variant="subtle"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                toggleFavourite(item);
+                                                            }}
+                                                        >
+                                                            {isFavourite(item) ? 
+                                                                <IconStarFilled size={16} style={{ color: '#ffd700' }} /> : 
+                                                                <IconStar size={16} />
+                                                            }
+                                                        </ActionIcon>
                                                     }
-                                                    rightSection={<IconArrowBadgeRight size={16} />}
-                                                    onClick={() => props.setStock(item)}
                                                     styles={{ root: { borderRadius: '8px' } }}
                                                 />
                                             ))
@@ -90,9 +131,38 @@ const SidePanel = (props) => {
                                 </Tabs.Panel>
 
                                 <Tabs.Panel value="fav" pt="xs">
-                                    <Box px="md">
-                                        <Text size="sm" c="dimmed">Not implemented yet.</Text>
-                                    </Box>
+                                    <Stack gap="xs" px="md" pb="md">
+                                        {favourites.length === 0 ? (
+                                            <Text size="sm" c="dimmed">No favourites yet. Click the star icon to add stocks to your favourites.</Text>
+                                        ) : (
+                                            favourites.map((item) => (
+                                                <NavLink
+                                                    key={item.value}
+                                                    label={item.label}
+                                                    variant={props.selectedStock?.value === item.value ? "light" : "subtle"}
+                                                    leftSection={
+                                                        <ThemeIcon size="sm" variant="light" radius="xl">
+                                                            <img src={"cryptoIcons/" + item.icon} alt={item.label[0]} />
+                                                        </ThemeIcon>
+                                                    }
+                                                    onClick={() => props.setStock(item)}
+                                                    rightSection={
+                                                        <ActionIcon
+                                                            size="sm"
+                                                            variant="subtle"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                toggleFavourite(item);
+                                                            }}
+                                                        >
+                                                            <IconStarFilled size={16} style={{ color: '#ffd700' }} />
+                                                        </ActionIcon>
+                                                    }
+                                                    styles={{ root: { borderRadius: '8px' } }}
+                                                />
+                                            ))
+                                        )}
+                                    </Stack>
                                 </Tabs.Panel>
                             </Box>
                         </Tabs>
@@ -111,16 +181,16 @@ const SidePanel = (props) => {
                 </>
             ) : (
                 <>
-                    <Box style={{ flex: 1, minHeight: 0, overflow: 'auto' }} py="xs">
+                    <Box style={{ flex: 1, minHeight: 0, marginTop: '80px' }} py="xs">
                         <Stack gap="xs" px="xs">
-                            {(props.selectedTab === "all" ? props.allList : props.cryptoList)?.map((item) => (
+                            {props.allList?.map((item) => (
                                 <NavLink
                                     key={item.value}
                                     label=""
                                     variant={props.selectedStock?.value === item.value ? "filled" : "subtle"}
                                     leftSection={
                                         <ThemeIcon size="sm" variant="light" radius="xl">
-                                            {item.label[0]}
+                                            <img src={"cryptoIcons/" + item.icon} alt={item.label[0]} />
                                         </ThemeIcon>
                                     }
                                     onClick={() => props.setStock(item)}

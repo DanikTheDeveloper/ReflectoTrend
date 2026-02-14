@@ -107,14 +107,13 @@ const Dashboard = () => {
             
             <Box style={{ 
                 flex: 1, 
-                width: '100%',
                 height: '100vh',
                 overflow: 'auto',
                 padding: '1rem',
             }}>
-                    <div className={classes.mainPanel}>
-                        <Chart stock={selectedStock} />
-                    </div>
+                <div className={classes.mainPanel}>
+                    <Chart stock={selectedStock} />
+                </div>
             </Box>
         </Box>
     }

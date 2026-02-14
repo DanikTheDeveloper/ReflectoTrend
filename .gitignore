@@ -14,6 +14,7 @@ backend/reflecto.trend
 backend/to_exe
 backend/bin/air
 backend/bin/tmp
+backend/data
 main.js
 main.js*
 *.db

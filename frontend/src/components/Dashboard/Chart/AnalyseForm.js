@@ -1,6 +1,6 @@
 import React from "react";
-import { Container, Title, Grid, TextInput, Select, Button,  Slider, Text, Group, SimpleGrid, Accordion } from '@mantine/core';
-import {DateInput } from "@mantine/dates";
+import { Container, Title, NumberInput, Button, Text, Stack, Box } from '@mantine/core';
+import { DateInput } from "@mantine/dates";
 import classes from "./Chart.module.css";
 import { useDispatch, useSelector } from "react-redux";
 import { formatDate } from "../../Utils/Utils";
@@ -27,90 +27,88 @@ const AnalyseForm = (props = {analyseSlice}) => {
         }
         props.analyseSlice(data)
     };
+    
     return (
-        <>
-        <Accordion variant="contained" defaultValue="analyse">
-
-        <Accordion.Item value="analyse" >
-        <Accordion.Control>
-            <Title order={2}>
-            Analyse Data
+        <Box style={{ 
+            marginLeft: '-5px',
+            borderRadius: '4px',
+            background: '#ffffff',
+            padding: '1rem',
+        }}>
+            <Title order={3} mb="md">
+                Analyse Data
             </Title>
-        </Accordion.Control>
-        <Accordion.Panel>
-            <Container size="md" >
-                <form onSubmit={handleSubmit}>
-                    <SimpleGrid cols={2} className={classes.gridContainer}>
+            <form onSubmit={handleSubmit}>
+                <Stack spacing="md">
                     <div>
-                        <Text size="sm" weight={700} style={{ marginBottom: '8px' }}>
-                            Slice To Analyze:
+                        <Text size="sm" weight={700} mb="xs">
+                            Start Date
                         </Text>
-                        <Group>
-                            <DateInput
-                                label="Start Date"
-                                value={formData.startDate}
-                                onChange={(value) =>
-                                    setFormData({
-                                        ...formData,
-                                        startDate: value
-                                    })
-                                }
-                            />
-                            <DateInput
-                                label="End Date"
-                                value={formData.endDate}
-                                minDate={new Date(0)} // Set a minimum date, e.g., '1970-01-01'
-                                maxDate={new Date()} // Set a maximum date, e.g., today
-                                onChange={(value) =>
-                                    setFormData({
-                                        ...formData,
-                                        endDate: value
-                                    })
-                                }
-                            />
-                        </Group>
-                        <Text size="sm" weight={700} style={{ marginTop: '8px', marginBottom: '8px' }}>
-                            Minimum Similarity Rate:
+                        <DateInput
+                            value={formData.startDate}
+                            onChange={(value) =>
+                                setFormData({
+                                    ...formData,
+                                    startDate: value
+                                })
+                            }
+                            size="sm"
+                        />
+                    </div>
+                    
+                    <div>
+                        <Text size="sm" weight={700} mb="xs">
+                            End Date
                         </Text>
-                        <div className={classes.slider}>
-                        <Slider
-                            showLabelOnHover={false}
-                            labelAlwaysOn={true}
+                        <DateInput
+                            value={formData.endDate}
+                            minDate={new Date(0)}
+                            maxDate={new Date()}
+                            onChange={(value) =>
+                                setFormData({
+                                    ...formData,
+                                    endDate: value
+                                })
+                            }
+                            size="sm"
+                        />
+                    </div>
+                    
+                    <div>
+                        <Text size="sm" weight={700} mb="xs">
+                            Similarity Rate
+                        </Text>
+                        <NumberInput
                             value={formData.minimumSimilarityRate}
-                            onChange={(value) => setFormData({ ...formData, minimumSimilarityRate: value })}
+                            onChange={(value) => 
+                                setFormData({ 
+                                    ...formData, 
+                                    minimumSimilarityRate: value 
+                                })
+                            }
                             min={0}
                             max={100}
                             step={1}
-                            marks={[
-                                { value: 20, label: '20%' },
-                                { value: 50, label: '50%' },
-                                { value: 80, label: '80%' },
-                           ]}
-
+                            suffix="%"
+                            size="sm"
                         />
-                        </div>
-                        <Button type="submit" variant="filled" color="blue" style={{ marginTop: '16px' }} loading={isAnalyseLoading}>
-                            Start Analysis
-                        </Button>
                     </div>
-                    <div>
-                        <AnalyseResults />
-                    </div>
-                    </SimpleGrid>
-                </form>
-            </Container>
-        </Accordion.Panel>
-        </Accordion.Item>
-        <Accordion.Item value="save_results">
-        <Accordion.Control>
-            Save Results
-        </Accordion.Control>
-        <Accordion.Panel>
-            <p>WIP</p>
-        </Accordion.Panel>
-        </Accordion.Item>
-        </Accordion>
-        </>
+                    
+                    <Button 
+                        type="submit" 
+                        variant="filled" 
+                        color="blue" 
+                        loading={isAnalyseLoading}
+                        fullWidth
+                        size="sm"
+                    >
+                        Analyze
+                    </Button>
+                    
+                    <AnalyseResults />
+                </Stack>
+            </form>
+        </Box>
     );
 }
 

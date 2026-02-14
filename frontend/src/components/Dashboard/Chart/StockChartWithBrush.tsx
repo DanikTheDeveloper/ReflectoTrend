@@ -92,15 +92,32 @@ const smaVolume50 = sma()
     .merge((d: any, c: any) => { d.smaVolume50 = c; })
     .accessor((d: any) => d.smaVolume50);
 
+
+
 class CandlestickChart extends Component<CandlestickChartProps, CandlestickChartState> {
     private node_1?: any;
     private canvasNode?: any;
+    private interactiveNodes?: any;
+
+    private saveInteractiveNode(type: string, chartId: number) {
+        return (node: any) => {
+            if (!this.interactiveNodes) {
+                this.interactiveNodes = {};
+            }
+            const key = `${type}_${chartId}`;
+            if (node || this.interactiveNodes[key]) {
+                this.interactiveNodes = {
+                    ...this.interactiveNodes,
+                    [key]: { type, chartId, node },
+                };
+            }
+        };
+    }
 
     constructor(props: CandlestickChartProps) {
         super(props);
         this.handleBrush1 = this.handleBrush1.bind(this);
         this.onKeyPress = this.onKeyPress.bind(this);
-        //this.saveInteractiveNode = saveInteractiveNode.bind(this);
         this.handleChangeViewRange = this.handleChangeViewRange.bind(this);
 
         const { data: initialData } = props;
@@ -124,6 +141,7 @@ class CandlestickChart extends Component<CandlestickChartProps, CandlestickChart
         };
     }
 
+
     componentDidMount() {
         document.addEventListener("keyup", this.onKeyPress);
     }
@@ -136,13 +154,14 @@ class CandlestickChart extends Component<CandlestickChartProps, CandlestickChart
         if (prevProps.data.length !== this.props.data.length) {
             console.log("data changed");
         } else if (prevProps.resetView !== this.props.resetView) {
-            console.log(this.props.resetView);
             console.log("Resetting view");
             const left = 0;
             const right = this.props.data.length - 1;
 
             const calculatedData = macdCalculator(smaVolume50(ema12(ema26(this.props.data))));
-            const xScaleProvider = discontinuousTimeScaleProviderBuilder.inputDateAccessor((d: any) => d.date);
+            const xScaleProvider = discontinuousTimeScaleProviderBuilder().inputDateAccessor(
+                (d: any) => d.date,
+            );
             const { data, xScale, xAccessor, displayXAccessor } = xScaleProvider(calculatedData);
 
             this.setState({
@@ -214,7 +233,8 @@ class CandlestickChart extends Component<CandlestickChartProps, CandlestickChart
             clamp,
             plotResults,
             activePage,
-            macd
+            macd,
+            brush
         } = this.props;
         const { data, xExtents, xScale, xAccessor, displayXAccessor } = this.state;
 
@@ -258,7 +278,7 @@ class CandlestickChart extends Component<CandlestickChartProps, CandlestickChart
                         axisAt="left"
                         orient="left"
                         ticks={10}
-                        zoomEnabled={false}
+                        zoomEnabled={this.props.zoomEvent}
                         showTicks={true}
                         className="react-stockcharts3-y-axis y-axis"
                     />
@@ -329,6 +349,16 @@ class CandlestickChart extends Component<CandlestickChartProps, CandlestickChart
                                 />
                             </React.Fragment>
                         ))}
+                    
+                    {/* Brush component for zooming */}
+                    {brush && (
+                        <Brush
+                            ref={this.saveInteractiveNode(BRUSH_TYPE, 1)}
+                            enabled={brush}
+                            type={BRUSH_TYPE}
+                            onBrush={this.handleBrush1}
+                        />
+                    )}
                 </Chart>
                 {macd && (
                     <Chart
@@ -383,4 +413,3 @@ const Charter = withSize({ style: { minHeight: 650, minWidth: 1500 } })(
 ) as React.ComponentType<CandlestickChartProps>;
 
 export default Charter;
-

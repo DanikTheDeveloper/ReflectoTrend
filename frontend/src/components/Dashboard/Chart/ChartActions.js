@@ -1,5 +1,5 @@
 import React from "react";
-import { ActionIcon, Group, Space, Tooltip } from "@mantine/core";
+import { ActionIcon, div, Space, Tooltip } from "@mantine/core";
 import { IconBrush, IconRefresh, IconZoomInArea, IconBackslash, IconChartHistogram, IconArrowsHorizontal} from "@tabler/icons-react";
 
 const ChartActions = (props = { zoomEvent, brush, macd, handleAction }) => {
@@ -17,12 +17,10 @@ const ChartActions = (props = { zoomEvent, brush, macd, handleAction }) => {
                         {props.brush === false ?
                             <IconBrush size="1.5rem" stroke={1.5} />
                             :
-                            <>
-                                <Group position="center" style={{ position: 'relative', width: 'fit-content' }}  >
-                                    <IconBrush size="1.5rem" stroke={1.5} style={{ position: 'absolute' }} />
-                                    <IconBackslash size="2rem" stroke={2.5} style={{ position: 'relative', right: 0, bottom: 0 }} />
-                                </Group>
-                            </>
+                            <div style={{ position: 'relative', width: '1.5rem', height: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <IconBrush size="1.5rem" stroke={1.5} style={{ position: 'absolute' }} />
+                                <IconBackslash size="1.5rem" stroke={2.5} style={{ position: 'absolute' }} />
+                            </div>
                         }
                     </ActionIcon>
                 </Tooltip>
@@ -33,10 +31,10 @@ const ChartActions = (props = { zoomEvent, brush, macd, handleAction }) => {
                             <IconZoomInArea size="1.5rem" stroke={1.5} />
                             :
                             <>
-                                <Group position="center" style={{ position: 'relative', width: 'fit-content' }}  >
+                                <div style={{ position: 'relative', width: '1.5rem', height: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <IconZoomInArea size="1.5rem" stroke={1.5} style={{ position: 'absolute' }} />
-                                    <IconBackslash size="2rem" stroke={2.5} style={{ position: 'relative', right: 0, bottom: 0 }} />
-                                </Group>
+                                    <IconBackslash size="1.5rem" stroke={2.5} style={{ position: 'absolute' }} />
+                                </div>
                             </>
                         }
                     </ActionIcon>
@@ -48,10 +46,10 @@ const ChartActions = (props = { zoomEvent, brush, macd, handleAction }) => {
                             <IconChartHistogram size="1.5rem" stroke={1.5} />
                             :
                             <>
-                                <Group position="center" style={{ position: 'relative', width: 'fit-content' }}  >
+                                <div style={{ position: 'relative', width: '1.5rem', height: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <IconChartHistogram size="1.5rem" stroke={1.5} style={{ position: 'absolute' }} />
-                                    <IconBackslash size="2rem" stroke={2.5} style={{ position: 'relative', right: 0, bottom: 0 }} />
-                                </Group>
+                                    <IconBackslash size="1.5rem" stroke={2.5} style={{ position: 'absolute' }} />
+                                </div>
                             </>
                         }
                     </ActionIcon>

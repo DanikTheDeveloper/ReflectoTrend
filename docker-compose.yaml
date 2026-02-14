@@ -1,0 +1,57 @@
+services:
+  mailserver:
+    image: ghcr.io/docker-mailserver/docker-mailserver:13.3.0
+    container_name: reflecto_mailserver
+    hostname: ${site_url}
+    env_file: mailserver.env
+    ports:
+      - "587:587" # ESMTP (explicit TLS => STARTTLS)
+      - "25:25" # ESMTP (explicit TLS => STARTTLS)
+    volumes:
+      - ./docker-data/dms/mail-data/:/var/mail/
+      - ./docker-data/dms/mail-state/:/var/mail-state/
+      - ./docker-data/dms/mail-logs/:/var/log/mail/
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/letsencrypt/:/etc/letsencrypt/
+      - /tmp/docker-mailserver/:/tmp/docker-mailserver/
+  db:
+    image: postgres:17
+    container_name: ${database_name:-reflecto_db}
+    env_file:
+      - ./backend/.env
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_HOST=db
+    volumes:
+      - /var/lib/postgresql/17/main/:/var/lib/postgresql/data
+  backend:
+    build: ./backend
+    env_file: 
+      - ./backend/.env
+    container_name: ${backend_name:-reflecto_backend}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - /etc/letsencrypt/:/etc/letsencrypt/
+      - /var/lib/data:/usr/src/backend/data
+      - /var/logs/reflecto_backend:/var/logs/reflecto_backend
+    depends_on:
+      - db
+  frontend:
+    build: ./frontend
+    env_file:
+        - ./frontend/.env
+    container_name: ${frontend_name:-reflecto_frontend}
+    ports:
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
+      - /etc/letsencrypt/:/etc/nginx/ssl
+    depends_on:
+      - backend
