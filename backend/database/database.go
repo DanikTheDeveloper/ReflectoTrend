@@ -67,7 +67,7 @@ func NewDBConnection(Host, Port, User, Password, DBName, SSL_MODE, Schema string
 		log.Fatal(err)
 		return nil, err
 	}
-    _, err = db.Exec("SET search_path TO " + config.Schema)
+    _, err = db.Exec("SET search_path TO " + config.Schema + ";")
     if err != nil {
         log.Fatalf("Error setting schema: %v\n", err)
     }

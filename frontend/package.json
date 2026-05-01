@@ -6,8 +6,8 @@
     "scripts": {
         "serve": "webpack serve --mode development --hot",
         "build": "webpack --mode production --output-path ./public/",
+        "start": "npx serve ./public -l 3000",
         "dev": "webpack --mode development --watch ./src/index.js --output-path ./public/",
-        "start": "react-scripts start",
         "type-check": "tsc --noEmit",
         "type-check:watch": "tsc --noEmit --watch"
     },

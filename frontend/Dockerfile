@@ -1,24 +1,12 @@
-FROM node:18-alpine as build
-
+FROM node:22-alpine
 WORKDIR /app
 
 COPY package*.json ./
+RUN npm install --force
 
 COPY . .
-
-RUN apk update && \
-    apk upgrade --no-cache && \
-    npm install --force && \
-    npm cache clean --force && \
-    rm -rf /tmp/* /var/tmp/* /var/cache/apk/* /root/.npm /root/.node-gyp
-
-
 RUN npm run build
+RUN npm install -g serve
 
-FROM nginx:alpine
-
-COPY --from=build /app/public /usr/share/nginx/html
-
-EXPOSE 443
-
-CMD ["nginx", "-g", "daemon off;"]
+EXPOSE 3000
+CMD ["serve", "./public", "-l", "3000"]
