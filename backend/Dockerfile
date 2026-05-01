@@ -1,4 +1,4 @@
-# FROM golang:1.22-alpine
+FROM golang:1.22-alpine
 
 WORKDIR /go/src/app
 
@@ -12,7 +12,7 @@ RUN apk update && \
 RUN apk add sqlite
 RUN CGO_ENABLED=0 GOOS=linux go build -o /go/bin/app
 
-EXPOSE 8081
+EXPOSE 8080
 
 CMD ["/go/bin/app"]
 
