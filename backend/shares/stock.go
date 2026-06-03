@@ -76,6 +76,8 @@ func FetchFinanceDataByDate(code string, interval string, startDate CustomTime, 
 	}
 	defer db.Close()
 
+	db.Exec("PRAGMA journal_mode=WAL")
+
 	rows, err := db.Query("SELECT date, open, high, low, close FROM shares WHERE date >= ? AND date <= ?", 
 		startDate.ToTime().Format(ctLayout), endDate.ToTime().Format(ctLayout))
 	if err != nil {

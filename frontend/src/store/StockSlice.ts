@@ -68,7 +68,7 @@ export const getStockList = createAsyncThunk<
   async (_, thunkAPI) => {
     try {
       thunkAPI.dispatch(stockActions.stockLoading());
-      const resp = await axiosInstance.get<StockListResponse>("/api/getStockList/");
+      const resp = await axiosInstance.get<StockListResponse>("/api/getStockList");
       return resp.data;
     } catch (error: any) {
       thunkAPI.dispatch(

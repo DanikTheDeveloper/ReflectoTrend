@@ -125,7 +125,7 @@ const Chart: React.FC<ChartProps> = ({ stock }) => {
     setInterval(newInterval);
   };
 
-  React.useMemo(() => {
+  React.useEffect(() => {
     if (seriesData === null) {
       return;
     }
@@ -136,8 +136,9 @@ const Chart: React.FC<ChartProps> = ({ stock }) => {
     });
   }, [seriesData]);
 
-  React.useMemo(() => {
+  React.useEffect(() => {
     setLoading(true);
+    setSeriesData(null);
     
     dispatch(
       getStockData({
@@ -149,7 +150,7 @@ const Chart: React.FC<ChartProps> = ({ stock }) => {
     )
       .unwrap()
       .then((data: StockAPIResponse) => {
-        const parsedData = data.share.map(parseStockData(parseStockDate));
+        const parsedData = (data.share ?? []).map(parseStockData(parseStockDate));
         setSeriesData(parsedData);
         setLoading(false);
       })
@@ -231,7 +232,7 @@ const Chart: React.FC<ChartProps> = ({ stock }) => {
         
         <Space h="md" />
         
-        {!isLoading ? (
+        {!isLoading && seriesData != null ? (
           <Grid gutter="xs">
             <Grid.Col span={9} className={classes.chart}>
               <CandleStickChart
@@ -267,6 +268,13 @@ const Chart: React.FC<ChartProps> = ({ stock }) => {
         ) : (
           <Skeleton height={650} mt={6} width={1500} radius="lg" />
         )}
+                {
+                    isLoading && seriesData === null && (
+                        <Box h={650} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Title order={4} c="dimmed"> No data available for this stock. </Title>
+                        </Box>
+                    )
+                }
       </Box>
     </div>
   );

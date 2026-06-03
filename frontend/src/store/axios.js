@@ -2,7 +2,7 @@ import axios from "axios";
 
 let baseURL = window.location.origin;
 if (process.env.NODE_ENV === "development") {
-	baseURL = "http://localhost:8081";
+	baseURL = "http://localhost:8080";
 }
 
 const axiosInstance = axios.create({

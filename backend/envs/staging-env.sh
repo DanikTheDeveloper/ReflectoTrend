@@ -12,7 +12,7 @@ GOOGLE_REDIRECT_URL="http://localhost:3000/api/googleAuthCallback"
 
 SITE_SECRET_KEY="6LdJcYkoAAAAANVvDXxmn7Xj6pc6JJmwOR7fkV8m"
 
-PORT="8081"
+PORT="8080"
 DOMAIN="localhost:42069"
 site_url="http://localhost:42069"
 

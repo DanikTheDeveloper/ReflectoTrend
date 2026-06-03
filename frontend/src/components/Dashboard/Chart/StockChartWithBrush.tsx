@@ -151,7 +151,7 @@ class CandlestickChart extends Component<CandlestickChartProps, CandlestickChart
     }
 
     componentDidUpdate(prevProps: CandlestickChartProps) {
-        if (prevProps.data.length !== this.props.data.length) {
+        if ((prevProps.data?.length ?? 0) !== (this.props.data?.length ?? 0)) {
             console.log("data changed");
         } else if (prevProps.resetView !== this.props.resetView) {
             console.log("Resetting view");

@@ -72,6 +72,21 @@ func main() {
 		Host: "localhost",
 	}
 
+	go func() {
+		log.Println("Background stock sync: starting initial load")
+		if err := shares.StockUpdateAll(); err != nil {
+			log.Printf("Background stock sync error: %v", err)
+		}
+		ticker := time.NewTicker(24 * time.Hour)
+		defer ticker.Stop()
+		for range ticker.C {
+			log.Println("Background stock sync: scheduled refresh")
+			if err := shares.StockUpdateAll(); err != nil {
+				log.Printf("Background stock sync error: %v", err)
+			}
+		}
+	}()
+
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", env.Port),
 		Handler:      registerRoutes(env),

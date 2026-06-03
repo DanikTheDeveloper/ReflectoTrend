@@ -41,6 +41,10 @@ func StockUpdate(code string, interval string) ([]Share, error) {
 	}
 	defer db.Close()
 
+	if _, err := db.Exec("PRAGMA journal_mode=WAL"); err != nil {
+		return nil, fmt.Errorf("error enabling WAL mode: %v", err)
+	}
+
 	end := time.Now()
 	start, needInitialization, err := CheckDatabaseInitialization(db, code)
 	if err != nil {
@@ -234,11 +238,8 @@ func FetchSharesForInterval(code string, start, end time.Time, interval string) 
 		return nil, fmt.Errorf("invalid interval for granularity determination: %s", interval)
 	}
 
-	startUnix := start.Unix()
-	endUnix := end.Unix()
-
-	url := fmt.Sprintf("https://api.exchange.coinbase.com/products/%s/candles?start=%d&end=%d&granularity=%s",
-		code, startUnix, endUnix, granularity)
+	url := fmt.Sprintf("https://api.exchange.coinbase.com/products/%s/candles?start=%s&end=%s&granularity=%s",
+		code, start.UTC().Format(time.RFC3339), end.UTC().Format(time.RFC3339), granularity)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -266,7 +267,7 @@ func FetchSharesForInterval(code string, start, end time.Time, interval string) 
 	}
 
 	if len(candles) == 0 {
-		return nil, fmt.Errorf("no data returned from API")
+		return []Share{}, nil
 	}
 
 	for _, c := range candles {
