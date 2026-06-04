@@ -598,19 +598,14 @@ func ConfirmCaptcha(env *handler.Env, w http.ResponseWriter, r *http.Request) er
 		return handler.StatusError{Code: 400, Err: errors.New("Invalid Body")}
 	}
 
-	url := "https://www.google.com/recaptcha/api/siteverify"
-	secretKey := os.Getenv("site_secret_key")
-	data := map[string]string{
-		"secret":   secretKey,
-		"response": reqBody.CaptchaValue,
-	}
+	verifyURL := "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+	secretKey := os.Getenv("TURNSTILE_SECRET_KEY")
 
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		return handler.StatusError{Code: 500, Err: err}
-	}
+	form := url.Values{}
+	form.Set("secret", secretKey)
+	form.Set("response", reqBody.CaptchaValue)
 
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+	resp, err := http.PostForm(verifyURL, form)
 	if err != nil {
 		return handler.StatusError{Code: 500, Err: err}
 	}

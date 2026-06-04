@@ -12,7 +12,7 @@ import {
 import { resetPasswordEmail, confirmCaptcha } from "../../store/AuthSlice";
 import { useDispatch } from "react-redux";
 import { IconArrowBack, IconSend } from "@tabler/icons-react";
-import ReCAPTCHA from "react-google-recaptcha";
+import { Turnstile } from "@marsidev/react-turnstile";
 import { useForm } from "@mantine/form";
 import classes from "./Modal.module.css";
 
@@ -113,9 +113,9 @@ const ModalForgotPassword = () => {
                             type: "checkbox",
                         })}
                     >
-                        <ReCAPTCHA
-                            sitekey={process.env.site_key}
-                            onChange={handleRecaptcha}
+                        <Turnstile
+                            siteKey={process.env.TURNSTILE_SITE_KEY}
+                            onSuccess={handleRecaptcha}
                         />
                     </Input.Wrapper>
 

@@ -10,7 +10,7 @@ GOOGLE_AUTH_URL="https://accounts.google.com/o/oauth2/auth"
 GOOGLE_TOKEN_URL="https://oauth2.googleapis.com/token"
 GOOGLE_REDIRECT_URL="http://localhost:3000/api/googleAuthCallback"
 
-SITE_SECRET_KEY="6LdJcYkoAAAAANVvDXxmn7Xj6pc6JJmwOR7fkV8m"
+TURNSTILE_SECRET_KEY="1x0000000000000000000000000000000AA"
 
 PORT="8080"
 DOMAIN="localhost:42069"

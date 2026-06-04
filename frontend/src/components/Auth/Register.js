@@ -5,7 +5,7 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { confirmCaptcha, register } from "../../store/AuthSlice";
-import ReCAPTCHA from "react-google-recaptcha";
+import { Turnstile } from "@marsidev/react-turnstile";
 import classes from './Auth.module.css';
 import Header from "../Home/Header/Header.js";
 import { checkPassword } from "../Common/PasswordChecker.js";
@@ -227,7 +227,7 @@ const Register = () => {
 
                             <Space h="md" />
                             <Input.Wrapper disabled {...form.getInputProps('isRecaptchaValid', { type: 'checkbox' })}>
-                                <ReCAPTCHA sitekey={process.env.site_key} onChange={handleRecaptcha} />
+                                <Turnstile siteKey={process.env.TURNSTILE_SITE_KEY} onSuccess={handleRecaptcha} />
                             </Input.Wrapper>
                             <Space h="md" />
 
