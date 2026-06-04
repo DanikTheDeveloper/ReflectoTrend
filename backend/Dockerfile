@@ -1,4 +1,4 @@
-FROM golang:1.22-alpine
+FROM golang:1.22
 
 WORKDIR /go/src/app
 
@@ -6,11 +6,7 @@ COPY . .
 
 RUN go mod download
 
-RUN apk update && \
-    apk upgrade --no-cache
-
-RUN apk add sqlite
-RUN CGO_ENABLED=0 GOOS=linux go build -o /go/bin/app
+RUN CGO_ENABLED=1 GOOS=linux go build -o /go/bin/app
 
 EXPOSE 8080
 

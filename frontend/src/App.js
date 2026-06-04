@@ -122,7 +122,7 @@ const App = () => {
                     element: <Terms />
                 },
                 {
-                    path: "/api/googleAuthCallback",
+                    path: "/oauth/google/callback",
                     element: <BackendCallback />
                 },
                 { path: "*", element: <NotFound/>}
