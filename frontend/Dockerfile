@@ -1,12 +1,21 @@
-FROM node:22-alpine
-WORKDIR /app
+FROM node:22-alpine as builder
 
-COPY package*.json ./
-RUN npm install --force
+WORKDIR /usr/src/frontend  
 
-COPY . .
-RUN npm run build
-RUN npm install -g serve
+COPY . . 
 
-EXPOSE 3000
-CMD ["serve", "./public", "-l", "3000"]
+RUN apk update && \
+    apk upgrade --no-cache && \
+    npm install --force && \
+    npm cache clean --force && \
+    rm -rf /tmp/* /var/tmp/* /var/cache/apk/* /root/.npm /root/.node-gyp
+
+RUN npm run build --no-cache
+
+FROM nginx:latest
+
+COPY --from=builder /usr/src/frontend/public /var/html
+
+EXPOSE 443
+
+CMD ["nginx", "-g", "daemon off;"]
