@@ -7,37 +7,37 @@ import {notificationActions} from '../../store/NotificationSlice';
 import { useSelector } from "react-redux";
 
 const BackendCallback = () => {
-    const [ params ] = useSearchParams();
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
-    const isAuthenticated = useSelector(state => state.auth.isAuthenticated)
+	    const [ params ] = useSearchParams();
+	    const dispatch = useDispatch();
+	    const navigate = useNavigate();
+	    const isAuthenticated = useSelector(state => state.auth.isAuthenticated)
 
-    React.useLayoutEffect(() => {
-        document.title = "Google Auth";
-        if (isAuthenticated === true) {
-            navigate('/dashboard')
-        }
-    }, [isAuthenticated]);
+	    React.useLayoutEffect(() => {
+		            document.title = "Google Auth";
+		            if (isAuthenticated === true) {
+				                navigate('/dashboard')
+				            }
+		        }, [isAuthenticated]);
 
-    React.useLayoutEffect(() => {
-        dispatch(googleAuthCallback(params)).unwrap().then((resp) => {
-            console.log(resp)
-            return dispatch(loadUser()).unwrap().then(() => {
-                dispatch(notificationActions.setStatus({type: 'success', message: 'Successfully authorized with Google.', title: 'Google Auth'}))
-                navigate('/dashboard')
-            })
-        }).catch((error) => {
-            navigate('/register')
-            console.log(error)
-            dispatch(notificationActions.setStatus({type: 'error', message: 'Google Auth failed', title: 'Google Auth'}))
-        });
-    }, [params]);
+	    React.useLayoutEffect(() => {
+		            dispatch(googleAuthCallback(params)).unwrap().then((resp) => {
+				                console.log(resp)
+				                return dispatch(loadUser()).unwrap().then(() => {
+							                dispatch(notificationActions.setStatus({type: 'success', message: 'Successfully authorized with Google.', title: 'Google Auth'}))
+							                navigate('/dashboard')
+							            })
+				            }).catch((error) => {
+						                navigate('/register')
+						                console.log(error)
+						                dispatch(notificationActions.setStatus({type: 'error', message: 'Google Auth failed', title: 'Google Auth'}))
+						            });
+		        }, [params]);
 
-    return (
-        <>
-            <LoadingOverlay visible={true} zIndex={1000} overlayProps={{ radius: "lg", blur: 2 }}/>
-        </>
-    );
+	    return (
+		            <>
+		                <LoadingOverlay visible={true} zIndex={1000} overlayProps={{ radius: "lg", blur: 2 }}/>
+		            </>
+		        );
 }
 
 export default BackendCallback;

@@ -8,6 +8,7 @@ certbot certonly \
     --agree-tos \
     --email "piyushkhurana38@gmail.com" \
     --dns-cloudflare \
-    --dns-cloudflare-credentials /etc/letsencrypt/cloudflare.ini \
+    --dns-cloudflare-propagation-seconds 60 \
+    --dns-cloudflare-credentials /home/pka42/cloudflare.ini \
     -d "${site_url}" \
     -d "www.${site_url}"
