@@ -68,6 +68,7 @@ function Header(props = {image})  {
         }
         return (
             <Button
+                key={link.label}
                 className={classes.link}
                 size="md"
                 onClick={(e) => handleClick(e, link) }

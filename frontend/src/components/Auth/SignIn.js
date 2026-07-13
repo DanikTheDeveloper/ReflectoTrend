@@ -52,7 +52,8 @@ const SignIn = () => {
                 dispatch(loadUser())
                     .unwrap()
                     .then(() => navigate("/dashboard"))
-            );
+            )
+            .catch(() => {});
     };
 
     const inputStyles = {

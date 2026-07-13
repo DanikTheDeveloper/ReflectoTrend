@@ -399,7 +399,7 @@ func UpdateStock(stockName string, interval string) error {
 func getStartDateFromJSON(stockName string, assets []Asset) (time.Time, error) {
 	for _, asset := range assets {
 		if asset.Code == stockName { // assuming Code field is used to identify the stock
-			return time.Parse(ctLayout, asset.StartDate)
+			return time.Parse("2006-01-02 15:04", asset.StartDate)
 		}
 	}
 	return time.Time{}, fmt.Errorf("stock name not found in assets data")

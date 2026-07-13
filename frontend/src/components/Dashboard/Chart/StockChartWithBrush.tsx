@@ -73,13 +73,13 @@ const ema26 = ema()
     .id(0)
     .options({ windowSize: 26 })
     .merge((d: any, c: any) => { d.ema26 = c; })
-    .accessor((d: any) => d.ema26);
+    .accessor((d: any) => d?.ema26);
 
 const ema12 = ema()
     .id(1)
     .options({ windowSize: 12 })
     .merge((d: any, c: any) => { d.ema12 = c; })
-    .accessor((d: any) => d.ema12);
+    .accessor((d: any) => d?.ema12);
 
 const macdCalculator = macd()
     .options({ fast: 12, slow: 26, signal: 9 })
@@ -175,6 +175,18 @@ class CandlestickChart extends Component<CandlestickChartProps, CandlestickChart
                 yExtents3: undefined,
             });
             this.node_1?.terminate();
+        } else if (
+            prevProps.viewRange.startIdx !== this.props.viewRange.startIdx ||
+            prevProps.viewRange.endIdx !== this.props.viewRange.endIdx
+        ) {
+            const { data, xAccessor } = this.state;
+            const start = xAccessor(data[this.props.viewRange.startIdx]);
+            const end = xAccessor(data[Math.max(0, this.props.viewRange.endIdx - 150)]);
+
+            this.setState({
+                ...this.state,
+                xExtents: [start, end],
+            });
         }
     }
 
@@ -357,6 +369,7 @@ class CandlestickChart extends Component<CandlestickChartProps, CandlestickChart
                             enabled={brush}
                             type={BRUSH_TYPE}
                             onBrush={this.handleBrush1}
+                            fillStyle="rgba(70, 130, 180, 0.2)"
                         />
                     )}
                 </Chart>

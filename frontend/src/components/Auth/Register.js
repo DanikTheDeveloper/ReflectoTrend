@@ -9,32 +9,19 @@ import { Turnstile } from "@marsidev/react-turnstile";
 import classes from './Auth.module.css';
 import Header from "../Home/Header/Header.js";
 import { checkPassword } from "../Common/PasswordChecker.js";
-import GoogleSignInButton from "./GoogleSignInButton";
 import PageBackground from "../Common/Background";
 
-/**
- * Brand tokens
- * primary   #613DE4
- * secondary #4E31B6
- * accent    #FCE073  ← gold, used for the typewriter highlight
- * text-base #EDE9FF  ← near-white with a violet tint
- * text-muted rgba(210,200,255,0.60)
- */
-
-// ─── Buzzwords ────────────────────────────────────────────────────────────────
 const BUZZWORDS = [
     "Analytics", "Insights", "Growth", "Intelligence",
     "Performance", "Innovation", "Success", "Excellence",
 ];
 
-// ─── Feature rows ─────────────────────────────────────────────────────────────
 const FEATURES = [
     { icon: IconChartBar,   label: "Real-time dashboards" },
     { icon: IconBolt,       label: "Instant insights"     },
     { icon: IconTrendingUp, label: "Predictive trends"    },
 ];
 
-// ─── Typewriter hook ──────────────────────────────────────────────────────────
 const useTypewriter = (words, { typingSpeed = 80, deletingSpeed = 50, pauseDuration = 2000 } = {}) => {
     const [displayText, setDisplayText] = React.useState(words[0]);
     const [wordIndex,   setWordIndex]   = React.useState(0);
@@ -169,14 +156,6 @@ const Register = () => {
                 <LoadingOverlay visible={isLoading} />
                 <Grid.Col span={{ base: 12, md: 7 }}>
                     <div class={classes.formCard}>
-
-                        <GoogleSignInButton message="Sign up" />
-
-                        <div class={classes.orDivider}>
-                            <div class={classes.orLine} />
-                            OR
-                            <div class={classes.orLine} />
-                        </div>
 
                         <form onSubmit={form.onSubmit((values) => handleSubmit(values))}>
                             <TextInput

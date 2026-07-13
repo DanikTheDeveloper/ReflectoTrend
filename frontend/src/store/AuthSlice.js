@@ -2,6 +2,13 @@ import { createSelector, createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axiosInstance from '../store/axios.js';
 import {notificationActions} from './NotificationSlice.js';
 
+const getErrorMessage = (error) => {
+    if (typeof error.response?.data === 'string') return error.response.data;
+    if (error.response?.data?.detail) return error.response.data.detail;
+    if (error.response?.data?.message) return error.response.data.message;
+    return error.message;
+};
+
 export const initGoogleAuth = createAsyncThunk('initGoogleAuth', async (something=null, thunkAPI) => {
     try {
         const resp = await axiosInstance.post('/api/initGoogleAuth');
@@ -39,7 +46,7 @@ export const createPaymentIntent = createAsyncThunk('pricing/createPaymentIntent
         thunkAPI.dispatch(notificationActions.setStatus({type: 'success', message: "Payment intent created successfully.", title: 'Payment'}));
         return response.data;
     } catch(error) {
-        thunkAPI.dispatch(notificationActions.setStatus({type: 'error', message: error.response.data, title: 'Payment'}));
+        thunkAPI.dispatch(notificationActions.setStatus({type: 'error', message: getErrorMessage(error), title: 'Payment'}));
         throw(error);
     }
 });
@@ -67,7 +74,7 @@ export const resetPasswordEmail = createAsyncThunk('auth/resetPasswordEmail', as
         return resp.data;
     }
     catch(error) {
-        thunkAPI.dispatch(notificationActions.setStatus({type: 'error', message: error.response.data, title: 'Reset Password Email'}));
+        thunkAPI.dispatch(notificationActions.setStatus({type: 'error', message: getErrorMessage(error), title: 'Reset Password Email'}));
         thunkAPI.dispatch(authActions.stopLoading())
         throw(error);
     }
@@ -82,7 +89,7 @@ export const resetPassword = createAsyncThunk('auth/resetPassword', async (data,
         return resp.data;
     }
     catch(error) {
-        thunkAPI.dispatch(notificationActions.setStatus({type: 'error', message: error.response.data, title: 'Reset Password'}));
+        thunkAPI.dispatch(notificationActions.setStatus({type: 'error', message: getErrorMessage(error), title: 'Reset Password'}));
         thunkAPI.dispatch(authActions.stopLoading())
         throw(error);
     }
@@ -95,7 +102,7 @@ export const loadUser = createAsyncThunk('loadUser', async (something=null, thun
         const resp = await axiosInstance.get('/auth/user')
         return resp.data;
     }catch(error) {
-        thunkAPI.dispatch(notificationActions.setStatus({type: 'error', title: 'Load User', message: error.response.data }))
+        thunkAPI.dispatch(notificationActions.setStatus({type: 'error', title: 'Load User', message: getErrorMessage(error) }))
         throw(error)
     }
 });
@@ -109,7 +116,7 @@ export const signIn = createAsyncThunk('signIn', async ({email, password}, thunk
         return resp.data
     }
     catch(error) {
-        thunkAPI.dispatch(notificationActions.setStatus({type: 'error', title: 'Login', message: error.response.data }))
+        thunkAPI.dispatch(notificationActions.setStatus({type: 'error', title: 'Login', message: getErrorMessage(error) }))
         throw(error)
     }
 });
@@ -125,7 +132,7 @@ export const register = createAsyncThunk('register', async ({email, password}, t
         return resp.data
     }
     catch(error) {
-        thunkAPI.dispatch(notificationActions.setStatus({type: 'error', message: error.response.data, title: 'Register' }))
+        thunkAPI.dispatch(notificationActions.setStatus({type: 'error', message: getErrorMessage(error), title: 'Register' }))
         thunkAPI.dispatch(authActions.stopLoading())
         throw(error)
     }
@@ -140,7 +147,7 @@ export const signOut = createAsyncThunk('signOut', async ({}, thunkAPI) => {
         thunkAPI.dispatch(notificationActions.setStatus({type: 'success', title: 'Logout', message: resp.data }))
     }
     catch(error) {
-        thunkAPI.dispatch(notificationActions.setStatus({type: 'error', title: 'Logout', message: error.response.data }))
+        thunkAPI.dispatch(notificationActions.setStatus({type: 'error', title: 'Logout', message: getErrorMessage(error) }))
         throw(error)
     }
 });

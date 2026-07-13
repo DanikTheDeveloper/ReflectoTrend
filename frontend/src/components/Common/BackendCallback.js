@@ -2,7 +2,7 @@ import React from "react";
 import { LoadingOverlay } from "@mantine/core"
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useDispatch } from 'react-redux';
-import { googleAuthCallback } from "../../store/AuthSlice.js";
+import { googleAuthCallback, loadUser } from "../../store/AuthSlice.js";
 import {notificationActions} from '../../store/NotificationSlice';
 import { useSelector } from "react-redux";
 
@@ -22,8 +22,10 @@ const BackendCallback = () => {
     React.useLayoutEffect(() => {
         dispatch(googleAuthCallback(params)).unwrap().then((resp) => {
             console.log(resp)
-            dispatch(notificationActions.setStatus({type: 'success', message: 'Successfully authorized with Google.', title: 'Google Auth'}))
-            navigate('/dashboard')
+            return dispatch(loadUser()).unwrap().then(() => {
+                dispatch(notificationActions.setStatus({type: 'success', message: 'Successfully authorized with Google.', title: 'Google Auth'}))
+                navigate('/dashboard')
+            })
         }).catch((error) => {
             navigate('/register')
             console.log(error)

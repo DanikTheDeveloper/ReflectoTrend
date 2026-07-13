@@ -101,10 +101,10 @@ const LandingPageNotAuthenticated = () => {
                 </Carousel>
             <Container>
                 <Flex gap="md" justify="center" align="center" direction="column" wrap="wrap" >
-                    <Text align="center" style={{ fontSize: "32px" }} class={classes.title}>
+                    <Text ta="center" style={{ fontSize: "32px" }} className={classes.title}>
                         Our Services
                     </Text>
-                    <Text align="center" style={{ fontSize: "16px" }} class={classes.subtitle}>
+                    <Text ta="center" style={{ fontSize: "16px" }} className={classes.subtitle}>
                         We understand that within the flow of market trends lie hidden parallels and recurring motifs, often shadowing the potential of lucrative opportunities.
                     </Text>
                     <Space h="lg" />
@@ -119,7 +119,7 @@ const LandingPageNotAuthenticated = () => {
                             <Group justify="center" mt="md" mb="xs">
                                 <Text fw={500}>Analysis Tools</Text>
 
-                                <Text center size="sm" c="dimmed">
+                                <Text ta="center" size="sm" c="dimmed">
                                     Comes with all the tools included that you will need to analyze the market.
                                 </Text>
 
@@ -182,7 +182,7 @@ const LandingPageNotAuthenticated = () => {
                 <Space h="lg" />
                 <Flex direction="row" justify="space-evenly" align="center">
                     <Flex direction="column" justify="space-between" align="flex-start" >
-                        <Text style={{ fontSize: "24px" }} class={classes.title}>
+                        <Text style={{ fontSize: "24px" }} className={classes.title}>
                             Contact Us
                         </Text>
                         <Space h="md" />
@@ -201,7 +201,7 @@ const LandingPageNotAuthenticated = () => {
                         </Anchor>
                     </Flex>
                         <Flex direction="column" justify="space-between" align="flex-start" style={{ marginTop: "50px" }}>
-                            <Text style={{ fontSize: "24px" }} class={classes.title}>
+                            <Text style={{ fontSize: "24px" }} className={classes.title}>
                                 Links
                             </Text>
                             <Space h="sm" />
@@ -224,7 +224,7 @@ const LandingPageNotAuthenticated = () => {
                         <Space w="xl" />
                         <Space w="xl" />
                         <Flex direction="column" justify="space-between" align="flex-start" style={{float: "left" }} >
-                            <Text style={{ fontSize: "24px" }} class={classes.title}>
+                            <Text style={{ fontSize: "24px" }} className={classes.title}>
                                 Get Latest Updates!
                             </Text>
                             <TextInput placeholder="Enter email" size="md" value={email} onChange={(e) => setEmail(e.target.value)} />

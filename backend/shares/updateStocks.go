@@ -9,6 +9,7 @@ import (
 	"io"
 	"time"
     "net/http"
+    "strconv"
 
 	_ "github.com/mattn/go-sqlite3" 
 )
@@ -110,7 +111,7 @@ func CheckDatabaseInitialization(db *sql.DB, code string) (time.Time, bool, erro
 
 func FetchDataAndInitializeDB(db *sql.DB, code string, start, end time.Time, interval string) (error) {
 	// Create table
-	_, err := db.Exec("CREATE TABLE shares (id INTEGER PRIMARY KEY, date TEXT, open REAL, high REAL, low REAL, close REAL)")
+	_, err := db.Exec("CREATE TABLE shares (id INTEGER PRIMARY KEY, date TEXT UNIQUE, open REAL, high REAL, low REAL, close REAL)")
 	if err != nil {
 		return fmt.Errorf("error creating table: %v", err)
 	}
@@ -162,16 +163,15 @@ func FetchAndInsertData(db *sql.DB, code string, start, end time.Time, interval 
 	}
 	defer stmt.Close()
 
-	granularity := determineGranularity(interval)
-	if granularity == "" {
+	if determineGranularity(interval) == "" {
 		return fmt.Errorf("invalid interval: %s", interval)
 	}
 
-	granularitySeconds, _ := time.ParseDuration(granularity + "s")
+	intervalDur := intervalDuration(interval)
 	totalDuration := end.Sub(start)
-	totalDataPoints := int(totalDuration / granularitySeconds)
+	totalDataPoints := int(totalDuration / intervalDur)
 	
-	maxDataPointsPerRequest := 300
+	maxDataPointsPerRequest := 1000
 	numRequests := (totalDataPoints + maxDataPointsPerRequest - 1) / maxDataPointsPerRequest
 	
 	if numRequests == 0 {
@@ -231,15 +231,16 @@ func ReadStartDateFromJSON(code string) (time.Time, error) {
 
 
 func FetchSharesForInterval(code string, start, end time.Time, interval string) ([]Share, error) {
-	var shares []Share
-	granularity := determineGranularity(interval)
-
-	if granularity == "" {
-		return nil, fmt.Errorf("invalid interval for granularity determination: %s", interval)
+	if determineGranularity(interval) == "" {
+		return nil, fmt.Errorf("invalid interval: %s", interval)
 	}
 
-	url := fmt.Sprintf("https://api.exchange.coinbase.com/products/%s/candles?start=%s&end=%s&granularity=%s",
-		code, start.UTC().Format(time.RFC3339), end.UTC().Format(time.RFC3339), granularity)
+	symbol := toBinanceSymbol(code)
+	startMs := start.UnixMilli()
+	endMs := end.UnixMilli()
+
+	url := fmt.Sprintf("https://api.binance.com/api/v3/klines?symbol=%s&interval=%s&startTime=%d&endTime=%d&limit=1000",
+		symbol, interval, startMs, endMs)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -248,10 +249,10 @@ func FetchSharesForInterval(code string, start, end time.Time, interval string) 
 
 	req.Header.Set("User-Agent", "Mozilla/5.0")
 
-	client := &http.Client{Timeout: 60 * time.Second}
+	client := &http.Client{Timeout: 5 * time.Minute}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("error fetching Coinbase data: %v", err)
+		return nil, fmt.Errorf("error fetching Binance data: %v", err)
 	}
 	defer resp.Body.Close()
 
@@ -260,67 +261,54 @@ func FetchSharesForInterval(code string, start, end time.Time, interval string) 
 		return nil, fmt.Errorf("received status code %d: %s", resp.StatusCode, string(bodyBytes))
 	}
 
-	var candles [][]float64
-	err = json.NewDecoder(resp.Body).Decode(&candles)
+	var rawKlines [][]json.RawMessage
+	err = json.NewDecoder(resp.Body).Decode(&rawKlines)
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshaling response: %v", err)
 	}
 
-	if len(candles) == 0 {
-		return []Share{}, nil
+	var shares []Share
+	for _, k := range rawKlines {
+		if len(k) < 5 {
+			return nil, fmt.Errorf("unexpected kline data format: %+v", k)
+		}
+
+		var timestampMs int64
+		if err := json.Unmarshal(k[0], &timestampMs); err != nil {
+			return nil, fmt.Errorf("error parsing timestamp: %v", err)
+		}
+
+		var openStr, highStr, lowStr, closeStr string
+		if err := json.Unmarshal(k[1], &openStr); err != nil {
+			return nil, fmt.Errorf("error parsing open: %v", err)
+		}
+		if err := json.Unmarshal(k[2], &highStr); err != nil {
+			return nil, fmt.Errorf("error parsing high: %v", err)
+		}
+		if err := json.Unmarshal(k[3], &lowStr); err != nil {
+			return nil, fmt.Errorf("error parsing low: %v", err)
+		}
+		if err := json.Unmarshal(k[4], &closeStr); err != nil {
+			return nil, fmt.Errorf("error parsing close: %v", err)
+		}
+
+		open, _ := strconv.ParseFloat(openStr, 64)
+		high, _ := strconv.ParseFloat(highStr, 64)
+		low, _ := strconv.ParseFloat(lowStr, 64)
+		close, _ := strconv.ParseFloat(closeStr, 64)
+
+		shares = append(shares, Share{
+			Date: time.UnixMilli(timestampMs),
+			Data: OHLC{Open: open, High: high, Low: low, Close: close},
+		})
 	}
 
-	for _, c := range candles {
-		if len(c) < 5 {
-			return nil, fmt.Errorf("unexpected candle data format: %+v", c)
-		}
-		share := Share{
-			Date: time.Unix(int64(c[0]), 0),
-			Data: OHLC{
-				Open:  c[3],
-				High:  c[2],
-				Low:   c[1],
-				Close: c[4],
-			},
-		}
-		shares = append(shares, share)
+	if len(shares) == 0 {
+		return []Share{}, nil
 	}
 
 	return shares, nil
 }
 
-func calculateStepSize(interval string) time.Duration {
-	switch interval {
-	case "1m":
-		return time.Hour * 6
-	case "3m":
-		return time.Hour * 18
-	case "5m":
-		return time.Hour * 30
-	case "15m":
-		return time.Hour * 90
-	case "30m":
-		return time.Hour * 180
-	case "1h":
-		return time.Hour * 300
-	case "2h":
-		return time.Hour * 24 * 7
-	case "4h":
-		return time.Hour * 24 * 14
-	case "6h":
-		return time.Hour * 24 * 21
-	case "8h":
-		return time.Hour * 24 * 28
-	case "12h":
-		return time.Hour * 24 * 42
-	case "1d":
-		return time.Hour * 24 * 100
-	case "3d":
-		return time.Hour * 24 * 300
-	case "1w":
-		return time.Hour * 24 * 365
-	default:
-		return time.Hour * 24 * 7
-	}
-}
+
 

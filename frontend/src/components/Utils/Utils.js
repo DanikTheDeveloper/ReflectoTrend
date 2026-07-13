@@ -10,7 +10,6 @@ export function padTo2Digits(num) {
   return num.toString().padStart(2, '0');
 }
 
-// Function to format a date to `yyyy-mm-dd HH:MM`
 export function formatDate(date) {
   return [
     date.getFullYear(),
@@ -19,7 +18,8 @@ export function formatDate(date) {
   ].join('-') + ' ' +
   [
     padTo2Digits(date.getHours()),
-    padTo2Digits(date.getMinutes())
+    padTo2Digits(date.getMinutes()),
+    padTo2Digits(date.getSeconds())
   ].join(':');
 }
 

@@ -107,7 +107,7 @@ type Flags struct {
 
 const (
 	TIINGO_TOKEN = "503caf22f92458ab311ff26a3de091d89e9cb73c"
-	ctLayout     = "2006-01-02 04:05"
+	ctLayout     = "2006-01-02 15:04:05"
 )
 
 // CustomTime is a wrapper for time.Time to handle custom JSON unmarshalling
@@ -141,9 +141,14 @@ func (ct CustomTime) ToTime() time.Time {
 }
 
 func (ct *CustomTime) UnmarshalJSON(b []byte) error {
-	t, err := time.Parse(ctLayout, strings.Trim(string(b), "\""))
+	s := strings.Trim(string(b), "\"")
+
+	t, err := time.Parse("2006-01-02 15:04:05", s)
 	if err != nil {
-		return err
+		t, err = time.Parse("2006-01-02 15:04", s)
+		if err != nil {
+			return err
+		}
 	}
 	*ct = CustomTime(t)
 	return nil
