@@ -24,7 +24,21 @@ export interface SimilarSlice {
   similarity: number;
   startDate: string;
   endDate: string;
-  data: StockDataPoint[];
+  slice: StockDataPoint[];
+  forward?: StockDataPoint[];
+  forwardReturn?: number;
+  truncated?: boolean;
+}
+
+export interface AnalyseStats {
+  sampleCount: number;
+  lookAheadCandles: number;
+  pctHigher: number;
+  medianReturn: number;
+  meanReturn: number;
+  bestReturn: number;
+  worstReturn: number;
+  medianPath: number[];
 }
 
 export interface StockState {
@@ -33,6 +47,7 @@ export interface StockState {
   stockList: StockListItem[];
   stockData: StockDataPoint[];
   analyseData: SimilarSlice[];
+  analyseStats: AnalyseStats | null;
 }
 
 export interface GetStockDataParams {
@@ -44,7 +59,10 @@ export interface GetStockDataParams {
 
 export interface AnalyseParams extends GetStockDataParams {
   minimumSimilarityRate?: number;
-  sliceToAnalyse?: string;
+  sliceToAnalyse?: [string, string];
+  searchScope?: string;
+  lookAheadCandles?: number;
+  maxResults?: number;
 }
 
 interface StockListResponse {
@@ -56,7 +74,8 @@ interface StockDataResponse {
 }
 
 interface AnalyseResponse {
-  similarSlices: SimilarSlice[] | null;
+  matches: SimilarSlice[];
+  stats: AnalyseStats | null;
 }
 
 export const getStockList = createAsyncThunk<
@@ -75,7 +94,7 @@ export const getStockList = createAsyncThunk<
         notificationActions.setStatus({
           type: "error",
           title: "Stock List",
-          message: error.response?.data || "Failed to fetch stock list",
+          message: extractErrorMessage(error, "Failed to fetch stock list"),
         })
       );
       throw error;
@@ -99,7 +118,7 @@ export const getStockData = createAsyncThunk<
       thunkAPI.dispatch(
         notificationActions.setStatus({
           type: "error",
-          message: error.response?.data || "Failed to fetch stock data",
+          message: extractErrorMessage(error, "Failed to fetch stock data"),
         })
       );
       thunkAPI.dispatch(stockActions.stopStockLoading());
@@ -115,7 +134,7 @@ export const handleAnalyse = createAsyncThunk<
 >(
   "stock/handleAnalyse",
   async (
-    { stockName, interval, startDate, endDate, minimumSimilarityRate, sliceToAnalyse },
+    { stockName, interval, startDate, endDate, minimumSimilarityRate, sliceToAnalyse, searchScope },
     thunkAPI
   ) => {
     try {
@@ -127,15 +146,16 @@ export const handleAnalyse = createAsyncThunk<
         endDate,
         minimumSimilarityRate,
         sliceToAnalyse,
+        searchScope,
       });
       const resp = await axiosInstance.post<AnalyseResponse>("/api/analyse", body);
       
-      if (resp.data.similarSlices == null) {
+      if (!resp.data.matches || resp.data.matches.length === 0) {
         thunkAPI.dispatch(
           notificationActions.setStatus({
-            type: "error",
+            type: "info",
             title: "Analyse",
-            message: "No similar Slices Found",
+            message: "No matches found — try lowering the similarity rate or changing the slice",
           })
         );
       }
@@ -148,7 +168,7 @@ export const handleAnalyse = createAsyncThunk<
         notificationActions.setStatus({
           type: "error",
           title: "Analyse",
-          message: error.response?.data || "Analysis failed",
+          message: extractErrorMessage(error, "Analysis failed"),
         })
       );
       throw error;
@@ -173,12 +193,21 @@ export const getStockDataAPI = createApi({
   }),
 });
 
+function extractErrorMessage(err: any, fallback: string): string {
+  if (!err.response?.data) return fallback;
+  const d = err.response.data;
+  if (typeof d === "string") return d;
+  if (typeof d === "object" && d !== null && typeof d.error === "string") return d.error;
+  return fallback;
+}
+
 const initialState: StockState = {
   isLoading: false,
   isAnalyseLoading: false,
   stockList: [],
   stockData: [],
   analyseData: [],
+  analyseStats: null,
 };
 
 export const stockSlice = createSlice({
@@ -217,7 +246,8 @@ export const stockSlice = createSlice({
         state.isLoading = false;
       })
       .addCase(handleAnalyse.fulfilled, (state, action: PayloadAction<AnalyseResponse>) => {
-        state.analyseData = action.payload.similarSlices || [];
+        state.analyseData = action.payload.matches || [];
+        state.analyseStats = action.payload.stats || null;
         state.isAnalyseLoading = false;
       })
       .addCase(handleAnalyse.rejected, (state) => {

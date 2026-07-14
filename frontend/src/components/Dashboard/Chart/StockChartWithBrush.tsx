@@ -44,6 +44,7 @@ interface CandlestickChartProps {
     viewRange: { startIdx: number; endIdx: number };
     resetView?: boolean;
     handleAction: (action: string) => void;
+    projectionData?: Array<{ date: Date; close: number }>;
 }
 
 interface CandlestickChartState {
@@ -304,6 +305,16 @@ class CandlestickChart extends Component<CandlestickChartProps, CandlestickChart
                     <CandlestickSeries />
                     <LineSeries yAccessor={ema26.accessor()} stroke={ema26.stroke()} />
                     <LineSeries yAccessor={ema12.accessor()} stroke={ema12.stroke()} />
+
+                    {this.props.projectionData && (
+                        <LineSeries
+                            data={this.props.projectionData}
+                            yAccessor={(d: any) => d.close}
+                            stroke="#228BE6"
+                            strokeWidth={2}
+                            strokeDasharray="6 3"
+                        />
+                    )}
 
                     <CurrentCoordinate yAccessor={ema26.accessor()} fill={ema26.stroke()} />
                     <CurrentCoordinate yAccessor={ema12.accessor()} fill={ema12.stroke()} />

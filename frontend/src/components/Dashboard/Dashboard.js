@@ -17,10 +17,6 @@ const iconDict = [
         name: "Bitcoin",
         icon: "btc.svg"
     },
-    {
-        name: "Litecoin",
-        icon: "ltc.svg"
-    }
 ];
 
 const Dashboard = () => {

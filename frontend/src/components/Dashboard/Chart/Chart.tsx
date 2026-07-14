@@ -1,6 +1,6 @@
 import React from "react";
 import { Title, Space, Box, Skeleton, Grid } from "@mantine/core";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getStockData, handleAnalyse } from "../../../store/StockSlice";
 import { formatDate } from "../../Utils/Utils";
 import CandleStickChart from "./StockChartWithBrush";
@@ -60,7 +60,10 @@ interface ChartProps {
 
 interface AnalyseFormData {
   minimumSimilarityRate: number;
-  sliceToAnalyse: string;
+  sliceToAnalyse: [string, string];
+  searchScope: string;
+  lookAheadCandles: number;
+  maxResults: number;
 }
 
 interface StockAPIResponse {
@@ -113,6 +116,41 @@ const Chart: React.FC<ChartProps> = ({ stock }) => {
     mouseMoveEvent: false,
     brush: false,
   });
+
+  const analyseStats = useSelector((state: any) => state.stock.analyseStats);
+  const analyseData = useSelector((state: any) => state.stock.analyseData);
+
+  const projectionData = React.useMemo(() => {
+    if (!analyseStats?.medianPath || !analyseData?.length || !seriesData?.length) return null;
+    const lastClose = seriesData[seriesData.length - 1].close;
+    const stepMs = seriesData.length >= 2
+      ? seriesData[seriesData.length - 1].date.getTime() - seriesData[seriesData.length - 2].date.getTime()
+      : 3600000;
+    const anchorTime = seriesData[seriesData.length - 1].date.getTime();
+    return analyseStats.medianPath.map((ret: number, i: number) => ({
+      date: new Date(anchorTime + (i + 1) * stepMs),
+      close: lastClose * (1 + ret),
+    }));
+  }, [analyseStats, analyseData, seriesData]);
+
+  const onJumpToMatch = React.useCallback((startDate: string, endDate: string) => {
+    if (!seriesData) return;
+    const startIdx = seriesData.findIndex(
+      (d) => d.date >= new Date(startDate)
+    );
+    const endIdx = seriesData.findIndex(
+      (d) => d.date >= new Date(endDate)
+    );
+    if (startIdx >= 0 && endIdx >= 0) {
+      setViewRange((prev) => ({
+        ...prev,
+        startIdx,
+        endIdx,
+        startDate: seriesData[startIdx].date,
+        endDate: seriesData[Math.min(endIdx, seriesData.length - 1)].date,
+      }));
+    }
+  }, [seriesData]);
 
   const handleAction = (action: ActionType): void => {
     setActionState({
@@ -170,7 +208,7 @@ const Chart: React.FC<ChartProps> = ({ stock }) => {
         setLoading(true);
         
         dispatch(
-          handleAnalyse({
+          getStockData({
             stockName: stock.value,
             interval: interval,
             startDate: formatDate(viewRange.startDate),
@@ -200,6 +238,9 @@ const Chart: React.FC<ChartProps> = ({ stock }) => {
         endDate: formatDate(viewRange.endDate),
         minimumSimilarityRate: formData.minimumSimilarityRate,
         sliceToAnalyse: formData.sliceToAnalyse,
+        searchScope: formData.searchScope,
+        lookAheadCandles: formData.lookAheadCandles || undefined,
+        maxResults: formData.maxResults || undefined,
       })
     )
       .unwrap()
@@ -233,38 +274,42 @@ const Chart: React.FC<ChartProps> = ({ stock }) => {
         <Space h="md" />
         
         {!isLoading && seriesData != null ? (
-          <Grid gutter="xs">
-            <Grid.Col span={9} className={classes.chart}>
-              <CandleStickChart
-                isLoading={isLoading}
-                type="hybrid"
-                data={seriesData}
-                stockName={stock.label}
-                viewRange={viewRange}
-                zoomEvent={actionState.zoomEvent}
-                brush={actionState.brush}
-                macd={actionState.macd}
-                resetView={actionState.resetView}
-                handleAction={handleAction}
-              />
-            </Grid.Col>
-            
-            <Grid.Col span={1}>
-              <div style={{ zIndex: 111111 }}>
-                <ChartActions
+          <>
+            <Grid gutter="xs">
+              <Grid.Col span={8} className={classes.chart}>
+                <CandleStickChart
+                  isLoading={isLoading}
+                  type="hybrid"
+                  data={seriesData}
+                  stockName={stock.label}
+                  viewRange={viewRange}
                   zoomEvent={actionState.zoomEvent}
                   brush={actionState.brush}
                   macd={actionState.macd}
                   resetView={actionState.resetView}
                   handleAction={handleAction}
+                  projectionData={projectionData}
                 />
-              </div>
-            </Grid.Col>
+              </Grid.Col>
+              
+              <Grid.Col span={1}>
+                <div style={{ zIndex: 111111 }}>
+                  <ChartActions
+                    zoomEvent={actionState.zoomEvent}
+                    brush={actionState.brush}
+                    macd={actionState.macd}
+                    resetView={actionState.resetView}
+                    handleAction={handleAction}
+                  />
+                </div>
+              </Grid.Col>
 
-            <Grid.Col span={2}>
-              <AnalyseForm analyseSlice={analyseSlice} />
-            </Grid.Col>
-          </Grid>
+              <Grid.Col span={3}>
+                <AnalyseForm analyseSlice={analyseSlice} onJumpToMatch={onJumpToMatch} />
+              </Grid.Col>
+            </Grid>
+
+          </>
         ) : (
           <Skeleton height={650} mt={6} width={1500} radius="lg" />
         )}

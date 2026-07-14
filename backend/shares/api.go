@@ -16,6 +16,16 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+// writeJSONError writes a JSON error body of the form {"error": "..."} with
+// the given status code, instead of the plain-text bodies http.Error produces.
+func writeJSONError(w http.ResponseWriter, message string, status int) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	if err := json.NewEncoder(w).Encode(map[string]string{"error": message}); err != nil {
+		log.Printf("Error encoding error response: %v\n", err)
+	}
+}
+
 func HandleTrends(env *handler.Env) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		w.Header().Set("Content-Type", "application/json")
@@ -24,7 +34,7 @@ func HandleTrends(env *handler.Env) httprouter.Handle {
 
 		dir, err := os.Getwd()
 		if err != nil {
-			http.Error(w, `{"error": "Server error"}`, http.StatusInternalServerError)
+			writeJSONError(w, "Server error", http.StatusInternalServerError)
 			return
 		}
 
@@ -38,7 +48,7 @@ func HandleTrends(env *handler.Env) httprouter.Handle {
 
 		data, err := os.ReadFile(filePath)
 		if err != nil {
-			http.Error(w, `{"error": "Failed to read trending data"}`, http.StatusInternalServerError)
+			writeJSONError(w, "Failed to read trending data", http.StatusInternalServerError)
 			return
 		}
 
@@ -49,7 +59,7 @@ func HandleTrends(env *handler.Env) httprouter.Handle {
 		}
 
 		if !json.Valid(data) {
-			http.Error(w, `{"error": "Invalid JSON data"}`, http.StatusInternalServerError)
+			writeJSONError(w, "Invalid JSON data", http.StatusInternalServerError)
 			return
 		}
 
@@ -70,7 +80,7 @@ func HandleAnalyse(env *handler.Env) httprouter.Handle {
 
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
-			http.Error(w, "Error reading request body", http.StatusBadRequest)
+			writeJSONError(w, "Error reading request body", http.StatusBadRequest)
 			return
 		}
 		log.Println("Raw request body:", string(body))
@@ -80,24 +90,40 @@ func HandleAnalyse(env *handler.Env) httprouter.Handle {
 		var apiReq AnalyzeAPIRequest
 		if err := json.NewDecoder(r.Body).Decode(&apiReq); err != nil {
 			log.Printf("JSON Decode Error: %v\n", err)
-			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			writeJSONError(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
 
+		if len(apiReq.SliceToAnalyse) != 2 {
+			writeJSONError(w, "sliceToAnalyse must contain exactly a start and end date", http.StatusBadRequest)
+			return
+		}
+
+		if determineGranularity(apiReq.Interval) == "" {
+			writeJSONError(w, fmt.Sprintf("unsupported interval: %s", apiReq.Interval), http.StatusBadRequest)
+			return
+		}
+
+		if apiReq.MinimumSimilarityRate < 0 || apiReq.MinimumSimilarityRate > 100 {
+			writeJSONError(w, "minimumSimilarityRate must be between 0 and 100", http.StatusBadRequest)
+			return
+		}
+		minSimilarityRate := apiReq.MinimumSimilarityRate / 100
+
 		assets, err := readAndUnmarshalAssets("./shares/sd.json")
 		if err != nil {
-			http.Error(w, "Server error while processing assets data", http.StatusInternalServerError)
+			writeJSONError(w, "Server error while processing assets data", http.StatusInternalServerError)
 			return
 		}
 
 		startDateFromJSON, err := validateAndFetchData(apiReq.StockName, assets)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			writeJSONError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		if apiReq.StartDate.ToTime().Before(startDateFromJSON) {
-			http.Error(w, "Requested start date is before the available date range for the stock", http.StatusBadRequest)
+			writeJSONError(w, "Requested start date is before the available date range for the stock", http.StatusBadRequest)
 			return
 		}
 
@@ -105,40 +131,63 @@ func HandleAnalyse(env *handler.Env) httprouter.Handle {
 		if err != nil {
 			log.Printf("Error fetching data for %s: %v\n", apiReq.StockName, err)
 			if strings.Contains(err.Error(), "no data found") {
-				http.Error(w, "Data not found for provided stock name or date range", http.StatusNotFound)
+				writeJSONError(w, "Data not found for provided stock name or date range", http.StatusNotFound)
 				return
 			}
-			http.Error(w, "Server error while fetching data", http.StatusInternalServerError)
+			writeJSONError(w, "Server error while fetching data", http.StatusInternalServerError)
 			return
 		}
 
 		fmt.Println("found data for shares")
 
-		targetPattern := prepareTargetPattern(apiReq, shares)
+		searchShares := shares
+		if apiReq.SearchScope == "" || apiReq.SearchScope == "viewRange" {
+			searchShares = filterSharesByDateRange(shares, apiReq.StartDate.ToTime(), apiReq.EndDate.ToTime())
+			log.Printf("Filtered shares to viewRange: %d out of %d candles\n", len(searchShares), len(shares))
+		}
 
-		similarSlices, err := FindSimilarPricePatterns(targetPattern, shares, apiReq.MinimumSimilarityRate)
+		targetPattern := prepareTargetPattern(apiReq, searchShares)
+
+		matches, err := FindSimilarPricePatterns(targetPattern, searchShares, minSimilarityRate)
 		if err != nil {
 			log.Printf("Error finding similar price patterns: %v\n", err)
-			http.Error(w, "Server error during analysis", http.StatusInternalServerError)
+			writeJSONError(w, "Server error during analysis", http.StatusInternalServerError)
 			return
 		}
 
+		lookAhead := apiReq.LookAheadCandles
+		targetLen := len(targetPattern)
+		if lookAhead <= 0 {
+			lookAhead = targetLen
+		}
+		maxCap := 3 * targetLen
+		if lookAhead > maxCap {
+			lookAhead = maxCap
+		}
 
-		log.Println("Number of shares fetched:", len(shares))
-		log.Println("Number of similar slices:", len(similarSlices))
+		maxRes := apiReq.MaxResults
+		if maxRes <= 0 {
+			maxRes = 20
+		}
+		if maxRes > 100 {
+			maxRes = 100
+		}
 
-		resp := APIResponse{SimilarSlices: similarSlices}
+		matches, stats := EnrichMatchesWithForwardData(matches, searchShares, lookAhead, maxRes)
+
+		log.Println("Number of shares searched:", len(searchShares))
+		log.Println("Number of matches:", len(matches))
+
+		// Fire-and-forget: don't fail the request if the counter update fails,
+		// and never write to w after the response body below has been sent.
+		if err := incrementAPICounter(env, email); err != nil {
+			log.Printf("Error incrementing API counter for %s: %v\n", email, err)
+		}
+
+		resp := APIResponse{Matches: matches, Stats: stats}
+		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
 			log.Printf("Error encoding response: %v\n", err)
-			http.Error(w, "Server error while preparing response", http.StatusInternalServerError)
-			return
-		}
-
-		// Increment API counter for the user
-		if err := incrementAPICounter(env, email); err != nil {
-			log.Printf("Error incrementing API counter: %v\n", err)
-			http.Error(w, "Server error while updating API counter", http.StatusInternalServerError)
-			return
 		}
 	}
 }
@@ -148,7 +197,7 @@ func HandleGetStockList(env *handler.Env) httprouter.Handle {
 		assetsData, err := os.ReadFile("./shares/sd.json")
 		if err != nil {
 			log.Printf("Error reading assets data: %v\n", err)
-			http.Error(w, "Server error while processing assets data", http.StatusInternalServerError)
+			writeJSONError(w, "Server error while processing assets data", http.StatusInternalServerError)
 			return
 		}
 
@@ -156,16 +205,17 @@ func HandleGetStockList(env *handler.Env) httprouter.Handle {
 		err = json.Unmarshal(assetsData, &assets)
 		if err != nil {
 			log.Printf("Error unmarshaling assets data: %v\n", err)
-			http.Error(w, "Server error while processing assets data", http.StatusInternalServerError)
+			writeJSONError(w, "Server error while processing assets data", http.StatusInternalServerError)
 			return
 		}
 
 		resp := GetStockListAPIResponse{Assets: assets}
 
+		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(resp)
 		if err != nil {
 			log.Printf("Error encoding response: %v\n", err)
-			http.Error(w, "Server error while preparing response", http.StatusInternalServerError)
+			writeJSONError(w, "Server error while preparing response", http.StatusInternalServerError)
 			return
 		}
 	}
@@ -177,7 +227,7 @@ func HandleGetStockData(env *handler.Env) httprouter.Handle {
 
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
-			http.Error(w, "Error reading request body", http.StatusInternalServerError)
+			writeJSONError(w, "Error reading request body", http.StatusInternalServerError)
 			return
 		}
 		log.Println("Raw request body:", string(body))
@@ -187,14 +237,14 @@ func HandleGetStockData(env *handler.Env) httprouter.Handle {
 		var apiReq StockDataAPIRequest
 		if err := json.NewDecoder(r.Body).Decode(&apiReq); err != nil {
 			log.Printf("JSON Decode Error: %v\n", err)
-			http.Error(w, "Invalid Body", http.StatusBadRequest)
+			writeJSONError(w, "Invalid Body", http.StatusBadRequest)
 			return
 		}
 
 		assetsData, err := os.ReadFile("./shares/sd.json")
 		if err != nil {
 			log.Printf("Error reading assets data: %v\n", err)
-			http.Error(w, "Server error while processing assets data", http.StatusInternalServerError)
+			writeJSONError(w, "Server error while processing assets data", http.StatusInternalServerError)
 			return
 		}
 
@@ -202,32 +252,33 @@ func HandleGetStockData(env *handler.Env) httprouter.Handle {
 		err = json.Unmarshal(assetsData, &assets)
 		if err != nil {
 			log.Printf("Error unmarshaling assets data: %v\n", err)
-			http.Error(w, "Server error while processing assets data", http.StatusInternalServerError)
+			writeJSONError(w, "Server error while processing assets data", http.StatusInternalServerError)
 			return
 		}
 
 		startDateFromJSON, err := validateAndFetchData(apiReq.StockName, assets)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			writeJSONError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		if apiReq.StartDate.ToTime().Before(startDateFromJSON) {
-			http.Error(w, "Requested start date is before the available date range for the stock", http.StatusBadRequest)
+			writeJSONError(w, "Requested start date is before the available date range for the stock", http.StatusBadRequest)
 			return
 		}
 
 		shares, err := FetchFinanceDataByDate(apiReq.StockName, apiReq.Interval, apiReq.StartDate, apiReq.EndDate)
 		if err != nil {
 			log.Printf("Error fetching data for %s: %v\n", apiReq.StockName, err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			writeJSONError(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		resp := GetStockAPIResponse{Share: shares}
+		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
 			log.Printf("Error encoding response: %v\n", err)
-			http.Error(w, "Server error while preparing response", http.StatusInternalServerError)
+			writeJSONError(w, "Server error while preparing response", http.StatusInternalServerError)
 			return
 		}
 	}
@@ -237,7 +288,7 @@ func HandleUpdateAllStocks(env *handler.Env) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		err := UpdateAllStocks()
 		if err != nil {
-			http.Error(w, "Failed to update all stocks: "+err.Error(), http.StatusInternalServerError)
+			writeJSONError(w, "Failed to update all stocks: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -256,7 +307,7 @@ func HandleUpdateStock(env *handler.Env) httprouter.Handle {
 
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
-			http.Error(w, "Error reading request body", http.StatusBadRequest)
+			writeJSONError(w, "Error reading request body", http.StatusBadRequest)
 			return
 		}
 		log.Println("Raw request body:", string(body))
@@ -266,19 +317,19 @@ func HandleUpdateStock(env *handler.Env) httprouter.Handle {
 		var apiReq AnalyzeAPIRequest
 		if err := json.NewDecoder(r.Body).Decode(&apiReq); err != nil {
 			log.Printf("JSON Decode Error: %v\n", err)
-			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			writeJSONError(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
 
 		assets, err := readAndUnmarshalAssets("./shares/sd.json")
 		if err != nil {
-			http.Error(w, "Server error while processing assets data", http.StatusInternalServerError)
+			writeJSONError(w, "Server error while processing assets data", http.StatusInternalServerError)
 			return
 		}
 
 		startDateFromJSON, err := validateAndFetchData(apiReq.StockName, assets)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			writeJSONError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		println("start date", startDateFromJSON.String())
@@ -287,10 +338,10 @@ func HandleUpdateStock(env *handler.Env) httprouter.Handle {
 		if err != nil {
 			log.Printf("Error fetching data for %s: %v\n", apiReq.StockName, err)
 			if strings.Contains(err.Error(), "no data found") {
-				http.Error(w, "Data not found for provided stock name or date range", http.StatusNotFound)
+				writeJSONError(w, "Data not found for provided stock name or date range", http.StatusNotFound)
 				return
 			}
-			http.Error(w, "Server error while fetching data", http.StatusInternalServerError)
+			writeJSONError(w, "Server error while fetching data", http.StatusInternalServerError)
 			return
 		}
 	}
@@ -334,6 +385,24 @@ func validateAndFetchData(StockName string, assets []Asset) (time.Time, error) {
 	}
 
 	return startDate, nil
+}
+
+// filterSharesByDateRange returns a sub-slice of shares whose Date falls within
+// [start, end] (inclusive). Assumes shares is sorted ascending by Date.
+func filterSharesByDateRange(shares []Share, start, end time.Time) []Share {
+	lo, hi := 0, len(shares)
+	for lo < len(shares) && shares[lo].Date.Before(start) {
+		lo++
+	}
+	for hi > 0 && shares[hi-1].Date.After(end) {
+		hi--
+	}
+	if lo >= hi {
+		return nil
+	}
+	out := make([]Share, hi-lo)
+	copy(out, shares[lo:hi])
+	return out
 }
 
 func prepareTargetPattern(apiReq AnalyzeAPIRequest, shares []Share) []Share {

@@ -2,20 +2,41 @@ package shares
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 	"github.com/markcheno/go-quote"
 )
 
-// SimilarSlice represents a slice of stock data that is similar to a given pattern
+// SimilarSlice represents a matched pattern window with its forward data.
 type SimilarSlice struct {
-    Slice          []Share  // Changed to hold a slice of Share
-    SimilarityRate float64
+	Similarity    float64   `json:"similarity"`
+	StartDate     time.Time `json:"startDate"`
+	EndDate       time.Time `json:"endDate"`
+	Slice         []Share   `json:"slice"`
+	Forward       []Share   `json:"forward,omitempty"`
+	ForwardReturn float64   `json:"forwardReturn,omitempty"`
+	Truncated     bool      `json:"truncated,omitempty"`
+	startIdx      int       // internal: index into historicalPatterns
 }
 
-// APIResponse and other API-related structs
+// AnalyseStats holds aggregate statistics computed over all matched forward
+// slices.
+type AnalyseStats struct {
+	SampleCount      int       `json:"sampleCount"`
+	LookAheadCandles int       `json:"lookAheadCandles"`
+	PctHigher        float64   `json:"pctHigher"`
+	MedianReturn     float64   `json:"medianReturn"`
+	MeanReturn       float64   `json:"meanReturn"`
+	BestReturn       float64   `json:"bestReturn"`
+	WorstReturn      float64   `json:"worstReturn"`
+	MedianPath       []float64 `json:"medianPath"`
+}
+
+// APIResponse is the analyse endpoint response.
 type APIResponse struct {
-	SimilarSlices []SimilarSlice `json:"similarSlices"`
+	Matches []SimilarSlice `json:"matches"`
+	Stats   *AnalyseStats  `json:"stats"`
 }
 
 type GetStockAPIResponse struct {
@@ -45,6 +66,9 @@ type AnalyzeAPIRequest struct {
 	SliceToAnalyse        []CustomTime `json:"sliceToAnalyse"`
 	MinimumSimilarityRate float64      `json:"minimumSimilarityRate"`
 	Interval              string       `json:"interval"`
+	SearchScope           string       `json:"searchScope"`
+	LookAheadCandles      int          `json:"lookAheadCandles"`
+	MaxResults            int          `json:"maxResults"`
 }
 
 type ShareAPIRequest struct {
@@ -106,9 +130,12 @@ type Flags struct {
 }
 
 const (
-	TIINGO_TOKEN = "503caf22f92458ab311ff26a3de091d89e9cb73c"
-	ctLayout     = "2006-01-02 15:04:05"
+	ctLayout = "2006-01-02 15:04:05"
 )
+
+// TIINGO_TOKEN is read from the environment; set it in .env. Never hardcode
+// API tokens in source - they end up in git history.
+var TIINGO_TOKEN = os.Getenv("TIINGO_TOKEN")
 
 // CustomTime is a wrapper for time.Time to handle custom JSON unmarshalling
 type CustomTime time.Time
