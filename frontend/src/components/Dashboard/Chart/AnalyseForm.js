@@ -1,12 +1,14 @@
 import React from "react";
-import { Container, Title, NumberInput, Button, Text, Stack, Box, SegmentedControl } from '@mantine/core';
+import { Container, Title, NumberInput, Button, Text, Stack, Box, SegmentedControl, Tooltip } from '@mantine/core';
 import { DateInput } from "@mantine/dates";
 import classes from "./Chart.module.css";
 import { useDispatch, useSelector } from "react-redux";
 import { formatDate } from "../../Utils/Utils";
+import { createAlert } from "../../../store/AlertsSlice";
 import AnalyseResults from "./AnalyseResults";
 
-const AnalyseForm = ({ analyseSlice, onJumpToMatch }) => {
+const AnalyseForm = ({ analyseSlice, onJumpToMatch, stockName, currentPrice }) => {
+	const dispatch = useDispatch();
 	const isAnalyseLoading = useSelector( (state) => state.stock.isAnalyseLoading);
 
     const [formData, setFormData] = React.useState({
@@ -170,6 +172,25 @@ const AnalyseForm = ({ analyseSlice, onJumpToMatch }) => {
                     >
                         Analyze
                     </Button>
+
+                    <Tooltip label={`Set alert at $${currentPrice?.toFixed(2) || '...'}`}>
+                        <Button
+                            variant="outline"
+                            color="violet"
+                            fullWidth
+                            size="sm"
+                            onClick={() => {
+                                dispatch(createAlert({
+                                    symbol: stockName,
+                                    condition: "above",
+                                    target_value: currentPrice * 1.01,
+                                }));
+                            }}
+                            disabled={!stockName || !currentPrice}
+                        >
+                            Alert at ${currentPrice?.toFixed(2) || '...'}
+                        </Button>
+                    </Tooltip>
                     
                     <AnalyseResults onJumpToMatch={onJumpToMatch} />
                 </Stack>

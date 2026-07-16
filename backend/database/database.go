@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 	"reflecto.trend/models"
 	"reflecto.trend/utils"
 	"time"
@@ -39,6 +41,16 @@ type Service interface {
 	DeleteExpiredTokens(token string) error
 	UpdateEmailVerificationStatus(email string) error
 	ResetPassword(email string, password []byte) error
+	CreateAlert(email, symbol, condition string, targetValue float64, windowMinutes *int, repeat int) (*models.Alert, error)
+	ListAlertsByUser(email string) ([]models.Alert, error)
+	DeleteAlert(id int, email string) error
+	UpdateAlertStatusOnly(id int, email string, status string) error
+	UpdateAlertTarget(id int, email string, target float64) error
+	UpdateAlertRepeat(id int, email string, repeat int) error
+	ListActiveAlerts() ([]models.Alert, error)
+	GetAlertByID(id int) (*models.Alert, error)
+	UpdateAlertStatus(id int, status string) error
+	RawDB() *sql.DB
 	Close() error
 }
 
@@ -76,6 +88,32 @@ func NewDBConnection(Host, Port, User, Password, DBName, SSL_MODE, Schema string
 	}
 	fmt.Println("Connected to database")
 	return dbInstance, nil
+}
+
+func RunMigrations(db *sql.DB, migrationsDir string) error {
+	entries, err := os.ReadDir(migrationsDir)
+	if err != nil {
+		return fmt.Errorf("reading migrations dir: %w", err)
+	}
+	for _, entry := range entries {
+		if entry.IsDir() || filepath.Ext(entry.Name()) != ".sql" {
+			continue
+		}
+		path := filepath.Join(migrationsDir, entry.Name())
+		sqlBytes, err := os.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("reading migration %s: %w", entry.Name(), err)
+		}
+		if _, err := db.Exec(string(sqlBytes)); err != nil {
+			return fmt.Errorf("executing migration %s: %w", entry.Name(), err)
+		}
+		log.Printf("Migration applied: %s", entry.Name())
+	}
+	return nil
+}
+
+func (s *service) RawDB() *sql.DB {
+	return s.db
 }
 
 func (s *service) Close() error {

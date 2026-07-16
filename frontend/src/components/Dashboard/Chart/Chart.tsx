@@ -305,7 +305,12 @@ const Chart: React.FC<ChartProps> = ({ stock }) => {
               </Grid.Col>
 
               <Grid.Col span={3}>
-                <AnalyseForm analyseSlice={analyseSlice} onJumpToMatch={onJumpToMatch} />
+                <AnalyseForm
+                  analyseSlice={analyseSlice}
+                  onJumpToMatch={onJumpToMatch}
+                  stockName={stock.value}
+                  currentPrice={seriesData.length > 0 ? seriesData[seriesData.length - 1].close : 0}
+                />
               </Grid.Col>
             </Grid>
 

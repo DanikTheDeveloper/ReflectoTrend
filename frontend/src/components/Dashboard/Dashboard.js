@@ -7,6 +7,8 @@ import AppShell from "../General/AppShell";
 import { Grid, Button, Box } from "@mantine/core";
 import { Link } from 'react-router-dom';
 import { useDisclosure } from '@mantine/hooks';
+import { fetchAlerts } from "../../store/AlertsSlice";
+import { notificationActions } from "../../store/NotificationSlice";
 
 const iconDict = [
     {
@@ -77,6 +79,34 @@ const Dashboard = () => {
     const searchStocks = (e) => {
         setSearchString(e.target.value);
     };
+
+    React.useEffect(() => {
+        let seenIds = JSON.parse(localStorage.getItem('alertSeenIds') || '[]');
+
+        const poll = async () => {
+            try {
+                const result = await dispatch(fetchAlerts());
+                const alerts = result.payload || [];
+                for (const a of alerts) {
+                    if (a.status === 'triggered' && !seenIds.includes(a.id)) {
+                        dispatch(notificationActions.setStatus({
+                            type: 'warning',
+                            title: `Alert: ${a.symbol}`,
+                            message: `${a.condition} triggered at $${a.target_value}`,
+                        }));
+                        seenIds.push(a.id);
+                    }
+                }
+                localStorage.setItem('alertSeenIds', JSON.stringify(seenIds));
+            } catch (e) {
+                // silent
+            }
+        };
+
+        poll();
+        const interval = setInterval(poll, 60000);
+        return () => clearInterval(interval);
+    }, [dispatch]);
 
     return (
         <AppShell

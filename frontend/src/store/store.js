@@ -4,6 +4,7 @@ import authReducer from "./AuthSlice";
 import patternReducer from "./PatternSlice";
 import stockReducer from "./StockSlice";
 import trendsReducer from "./TrendsSlice";
+import alertsReducer from "./AlertsSlice";
 // const enhancers = compose(
 //     window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
 // );
@@ -15,6 +16,7 @@ const store = configureStore({
         auth: authReducer,
         stock: stockReducer,
         trends: trendsReducer,
+        alerts: alertsReducer,
     },
 });
 

@@ -1,6 +1,7 @@
 package database
 
 import (
+    "database/sql"
     "time"
     "reflecto.trend/models"
     "golang.org/x/crypto/bcrypt"
@@ -168,6 +169,140 @@ func (s *service) UpdateEmailVerificationStatus(email string) error {
     _, err := s.db.Exec(`UPDATE users set is_verified=$1 where email=$2`,
                 true, email)
     return err
+}
+
+func (s *service) CreateAlert(email, symbol, condition string, targetValue float64, windowMinutes *int, repeat int) (*models.Alert, error) {
+	var a models.Alert
+	err := s.db.QueryRow(
+		`INSERT INTO alerts (user_email, symbol, condition, target_value, window_minutes, repeat)
+		 VALUES ($1, $2, $3, $4, $5, $6)
+		 RETURNING id, user_email, symbol, condition, target_value, window_minutes, status, repeat, created_at`,
+		email, symbol, condition, targetValue, windowMinutes, repeat,
+	).Scan(&a.ID, &a.UserEmail, &a.Symbol, &a.Condition, &a.TargetValue, &a.WindowMinutes, &a.Status, &a.Repeat, &a.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return &a, nil
+}
+
+func (s *service) ListAlertsByUser(email string) ([]models.Alert, error) {
+	rows, err := s.db.Query(
+		`SELECT id, user_email, symbol, condition, target_value, window_minutes, status, repeat, created_at, triggered_at
+		 FROM alerts WHERE user_email = $1 ORDER BY created_at DESC`, email)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var alerts []models.Alert
+	for rows.Next() {
+		var a models.Alert
+		var triggeredAt sql.NullTime
+		if err := rows.Scan(&a.ID, &a.UserEmail, &a.Symbol, &a.Condition, &a.TargetValue, &a.WindowMinutes, &a.Status, &a.Repeat, &a.CreatedAt, &triggeredAt); err != nil {
+			return nil, err
+		}
+		if triggeredAt.Valid {
+			ct := models.CustomTime{Time: triggeredAt.Time}
+			a.TriggeredAt = &ct
+		}
+		alerts = append(alerts, a)
+	}
+	return alerts, rows.Err()
+}
+
+func (s *service) UpdateAlertStatusOnly(id int, email string, status string) error {
+	res, err := s.db.Exec(`UPDATE alerts SET status = $1, triggered_at = NULL WHERE id = $2 AND user_email = $3`, status, id, email)
+	if err != nil {
+		return err
+	}
+	n, _ := res.RowsAffected()
+	if n == 0 {
+		return sql.ErrNoRows
+	}
+	return nil
+}
+
+func (s *service) UpdateAlertTarget(id int, email string, target float64) error {
+	res, err := s.db.Exec(`UPDATE alerts SET target_value = $1 WHERE id = $2 AND user_email = $3`, target, id, email)
+	if err != nil {
+		return err
+	}
+	n, _ := res.RowsAffected()
+	if n == 0 {
+		return sql.ErrNoRows
+	}
+	return nil
+}
+
+func (s *service) UpdateAlertRepeat(id int, email string, repeat int) error {
+	res, err := s.db.Exec(`UPDATE alerts SET repeat = $1 WHERE id = $2 AND user_email = $3`, repeat, id, email)
+	if err != nil {
+		return err
+	}
+	n, _ := res.RowsAffected()
+	if n == 0 {
+		return sql.ErrNoRows
+	}
+	return nil
+}
+
+func (s *service) DeleteAlert(id int, email string) error {
+	res, err := s.db.Exec(`DELETE FROM alerts WHERE id = $1 AND user_email = $2`, id, email)
+	if err != nil {
+		return err
+	}
+	n, _ := res.RowsAffected()
+	if n == 0 {
+		return sql.ErrNoRows
+	}
+	return nil
+}
+
+func (s *service) ListActiveAlerts() ([]models.Alert, error) {
+	rows, err := s.db.Query(
+		`SELECT id, user_email, symbol, condition, target_value, window_minutes, status, repeat, created_at, triggered_at
+		 FROM alerts WHERE status = 'active' ORDER BY symbol`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var alerts []models.Alert
+	for rows.Next() {
+		var a models.Alert
+		var triggeredAt sql.NullTime
+		if err := rows.Scan(&a.ID, &a.UserEmail, &a.Symbol, &a.Condition, &a.TargetValue, &a.WindowMinutes, &a.Status, &a.Repeat, &a.CreatedAt, &triggeredAt); err != nil {
+			return nil, err
+		}
+		if triggeredAt.Valid {
+			ct := models.CustomTime{Time: triggeredAt.Time}
+			a.TriggeredAt = &ct
+		}
+		alerts = append(alerts, a)
+	}
+	return alerts, rows.Err()
+}
+
+func (s *service) GetAlertByID(id int) (*models.Alert, error) {
+	var a models.Alert
+	var triggeredAt sql.NullTime
+	err := s.db.QueryRow(
+		`SELECT id, user_email, symbol, condition, target_value, window_minutes, status, repeat, created_at, triggered_at
+		 FROM alerts WHERE id = $1`, id,
+	).Scan(&a.ID, &a.UserEmail, &a.Symbol, &a.Condition, &a.TargetValue, &a.WindowMinutes, &a.Status, &a.Repeat, &a.CreatedAt, &triggeredAt)
+	if err != nil {
+		return nil, err
+	}
+	if triggeredAt.Valid {
+		ct := models.CustomTime{Time: triggeredAt.Time}
+		a.TriggeredAt = &ct
+	}
+	return &a, nil
+}
+
+func (s *service) UpdateAlertStatus(id int, status string) error {
+	_, err := s.db.Exec(`UPDATE alerts SET status = $1, triggered_at = CURRENT_TIMESTAMP WHERE id = $2`, status, id)
+	return err
 }
 
 func (s *service) ResetPassword(email string, password []byte) error {

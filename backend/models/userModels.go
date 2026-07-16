@@ -120,11 +120,61 @@ type EmailVerificationToken struct {
     Expiration  time.Time `json:expiration`
 }
 
+type IntBool int
+
+func (b IntBool) MarshalJSON() ([]byte, error) {
+	if b != 0 {
+		return []byte(`true`), nil
+	}
+	return []byte(`false`), nil
+}
+
+func (b *IntBool) UnmarshalJSON(data []byte) error {
+	if string(data) == `true` || string(data) == `1` {
+		*b = 1
+	} else {
+		*b = 0
+	}
+	return nil
+}
+
+type Alert struct {
+	ID            int         `json:"id"`
+	UserEmail     string      `json:"user_email"`
+	Symbol        string      `json:"symbol"`
+	Condition     string      `json:"condition"`
+	TargetValue   float64     `json:"target_value"`
+	WindowMinutes *int        `json:"window_minutes,omitempty"`
+	Status        string      `json:"status"`
+	Repeat        IntBool     `json:"repeat"`
+	CreatedAt     CustomTime  `json:"created_at"`
+	TriggeredAt   *CustomTime `json:"triggered_at,omitempty"`
+}
+
+type CreateAlertRequest struct {
+	Symbol        string  `json:"symbol"`
+	Condition     string  `json:"condition"`
+	TargetValue   float64 `json:"target_value"`
+	WindowMinutes *int    `json:"window_minutes,omitempty"`
+	Repeat        bool    `json:"repeat"`
+}
+
+type UpdateAlertRequest struct {
+	TargetValue *float64 `json:"target_value,omitempty"`
+	Status      *string  `json:"status,omitempty"`
+	Repeat      *bool    `json:"repeat,omitempty"`
+}
+
 type EmailData struct {
 	UnsubscribeLink   string
 	ProductUrl        string
 	ResetPasswordLink string
 	ContactUsUrl      string
 	VerifyLink        string
+	AlertSymbol       string
+	AlertCondition    string
+	AlertTarget       string
+	AlertCurrentPrice string
+	AlertTime         string
 }
 

@@ -9,6 +9,7 @@ import { MantineProvider} from '@mantine/core';
 
 import LandingPage from "./components/Home/Landing/LandingPage.js";
 import Dashboard from "./components/Dashboard/Dashboard.js";
+import Alerts from "./components/Dashboard/Alerts/Alerts.js";
 import NotFound from "./components/Utils/NotFound.js";
 import ContactUs from "./components/Home/ContactPage/ContactUs.js";
 import SignIn from "./components/Auth/SignIn.js";
@@ -68,6 +69,10 @@ const App = () => {
                     path: "/dashboard",
                     loader: () => DashboardLoader(),
                     element: <PrivateRoute><Dashboard /></PrivateRoute>
+                },
+                {
+                    path: "/alerts",
+                    element: <PrivateRoute><Alerts /></PrivateRoute>
                 },
                 {
                     path: "/blog",

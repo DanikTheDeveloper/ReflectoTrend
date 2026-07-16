@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"reflecto.trend/alerts"
 	"reflecto.trend/database"
 	"reflecto.trend/handler"
 	"reflecto.trend/shares"
@@ -59,6 +60,11 @@ func main() {
 		panic("cannot connect to database")
 	}
 
+	if err := database.RunMigrations(db.RawDB(), "./database/migrations"); err != nil {
+		fmt.Printf("Error running migrations: %v\n", err)
+		panic("cannot run migrations")
+	}
+
 	defer db.Close()
 
 	port, err := strconv.Atoi(os.Getenv("PORT"))
@@ -86,6 +92,8 @@ func main() {
 			}
 		}
 	}()
+
+	alerts.StartAlertWorker(env)
 
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", env.Port),
@@ -144,13 +152,17 @@ func registerRoutes(env *handler.Env) http.Handler {
 	r.POST("/api/generateSD", users.ValidateToken(env, shares.HandleGenerateSD(env)))
 	r.POST("/auth/authCheck", users.ValidateToken(env, users.HandleAuthorization(env)))
 	r.GET("/api/trends", users.ValidateToken(env, shares.HandleTrends(env)))
+	r.POST("/api/alerts", users.ValidateToken(env, alerts.HandleCreateAlert(env)))
+	r.GET("/api/alerts", users.ValidateToken(env, alerts.HandleListAlerts(env)))
+	r.DELETE("/api/alerts/:id", users.ValidateToken(env, alerts.HandleDeleteAlert(env)))
+	r.PATCH("/api/alerts/:id", users.ValidateToken(env, alerts.HandleUpdateAlert(env)))
 
 	r.Handler(http.MethodPost, "/api/initGoogleAuth", handler.OauthHandler{Env: env, OauthConf: myAuthConf, H: handler.WrapInitGoogleAuth(env, myAuthConf, users.InitGoogleAuth(env, myAuthConf))})
 	r.Handler(http.MethodPost, "/api/googleAuthCallback", handler.OauthHandler{Env: env, OauthConf: myAuthConf, H: handler.WrapGoogleAuthCallBack(env, myAuthConf, users.GoogleAuthCallBack(env, myAuthConf))})
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{os.Getenv("site_url")},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: true,

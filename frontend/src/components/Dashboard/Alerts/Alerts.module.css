@@ -1,0 +1,147 @@
+.pageWrapper {
+    min-height: 100vh;
+    margin-top: 70px;
+    padding: 3rem 1.5rem 4rem;
+    background:
+        radial-gradient(circle at 15% 0%, rgba(97, 61, 228, 0.10), transparent 45%),
+        light-dark(#f7f8fc, var(--mantine-color-dark-8));
+}
+
+.card {
+    border-radius: 20px;
+    border: 1px solid light-dark(rgba(97, 61, 228, 0.08), rgba(255, 255, 255, 0.06));
+    background: light-dark(rgba(255, 255, 255, 0.85), rgba(26, 27, 47, 0.6));
+    backdrop-filter: blur(16px);
+    box-shadow: 0 12px 32px -8px rgba(97, 61, 228, 0.12);
+    padding: 2rem;
+}
+
+.headerRow {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 6px;
+}
+
+.iconBadge {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    box-shadow: 0 6px 16px rgba(97, 61, 228, 0.35);
+}
+
+.title {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.subtitle {
+    margin-top: 2px;
+    margin-bottom: 24px;
+}
+
+.telegramTag {
+    margin-left: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: light-dark(rgba(97, 61, 228, 0.08), rgba(97, 61, 228, 0.18));
+}
+
+.tableWrapper {
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-5));
+}
+
+.tableHeadCell {
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 14px 18px !important;
+    border-bottom: none !important;
+    color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-gray-5));
+    background: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+}
+
+.tableRow {
+    transition: background-color 0.15s ease;
+}
+
+.tableRow:hover {
+    background-color: light-dark(rgba(97, 61, 228, 0.045), rgba(97, 61, 228, 0.08));
+}
+
+.tableCell {
+    padding: 16px 18px !important;
+    border-bottom: 1px solid light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-6)) !important;
+    font-size: 14px;
+}
+
+.symbolCell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.symbolDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    flex-shrink: 0;
+}
+
+.statusDot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+}
+
+.deleteBtn {
+    transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.deleteBtn:hover {
+    background-color: rgba(193, 55, 55, 0.12) !important;
+    transform: scale(1.1);
+}
+
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 4rem 1rem;
+    text-align: center;
+}
+
+.emptyIcon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+    background: light-dark(rgba(97, 61, 228, 0.08), rgba(97, 61, 228, 0.15));
+}
+
+.modalIconBadge {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}

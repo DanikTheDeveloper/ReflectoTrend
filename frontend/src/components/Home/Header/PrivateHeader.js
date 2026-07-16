@@ -20,6 +20,7 @@ import {
     IconLogout,
     IconSettings,
     IconIdBadge,
+    IconBell,
     IconMoon,
     IconSun,
 } from '@tabler/icons-react';
@@ -48,6 +49,9 @@ function PrivateHeader(props = {image, selectedIndex })  {
         }
         else if (value === 3) {
             navigate("/pricingDashboard")
+        }
+        else if (value === 4) {
+            navigate("/alerts")
         }
     }
 
@@ -129,6 +133,15 @@ function PrivateHeader(props = {image, selectedIndex })  {
                             active
                             variant={index === 3 ? "light" : "subtle"}
                             onClick={() => handleIndex(3)}
+                            className={classes.navlink}
+                        />
+                        <Space w="md" />
+                        <NavLink
+                            label="Alerts"
+                            leftSection={<IconBell size={18} />}
+                            active
+                            variant={index === 4 ? "light" : "subtle"}
+                            onClick={() => handleIndex(4)}
                             className={classes.navlink}
                         />
                 </div>
