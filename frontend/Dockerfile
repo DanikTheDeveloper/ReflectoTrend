@@ -16,6 +16,6 @@ FROM nginx:latest
 
 COPY --from=builder /usr/src/frontend/public /var/html
 
-EXPOSE 443
+EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
