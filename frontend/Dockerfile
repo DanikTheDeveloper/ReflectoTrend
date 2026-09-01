@@ -12,10 +12,14 @@ RUN apk update && \
 
 RUN npm run build --no-cache
 
-FROM nginx:latest
+FROM node:22-alpine
 
-COPY --from=builder /usr/src/frontend/public /var/html
+WORKDIR /app
 
-EXPOSE 80
+RUN npm install -g serve
 
-CMD ["nginx", "-g", "daemon off;"]
+COPY --from=builder /usr/src/frontend/public /app/public
+
+EXPOSE 8081
+
+CMD ["serve", "-s", "public", "-l", "8081"]
